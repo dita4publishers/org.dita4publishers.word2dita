@@ -9,7 +9,7 @@
   <target name="d4p.wordToDita.init" description="Init properties for wordToDita">
   	<property name="debug" value="false"/>
 
-    <property name="wordToDita.dir" location="${dita2wordToDita.buildfile.dir}/plugins/net.sourceforge.dita4publishers.word2dita"/>
+    <property name="wordToDita.dir" location="${dita2wordToDita.buildfile.dir}/plugins/org.dita4publishers.word2dita"/>
   		
   	<condition property="out.ext" value=".dita">
       <not>

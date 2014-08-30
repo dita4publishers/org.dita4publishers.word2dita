@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project name="DITA4Publishers word2dita" default="word2dita">
+<project name="org.dita4publishers.word2dita" default="word2dita">
 	
 	
 	<!--
