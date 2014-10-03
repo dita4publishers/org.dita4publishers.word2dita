@@ -68,7 +68,8 @@
     <xsl:param name="inputNodes" as="node()*"/>
     <xsl:variable name="rawData" as="xs:string"
       select="
-      concat('&lt;root xmlns:m=&quot;http://www.w3.org/1998/Math/MathML&quot;>', 
+      concat('&lt;!DOCTYPE root [ &lt;!ENTITY nbsp &quot;&amp;#xa0;&quot;&gt;]&gt;',
+      '&lt;root xmlns:m=&quot;http://www.w3.org/1998/Math/MathML&quot;>', 
       string-join($inputNodes, ''), 
       '&lt;/root>')"
     />
