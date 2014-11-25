@@ -14,6 +14,9 @@
        D4P document types.
     -->
   <require plugin="org.dita4publishers.doctypes"/> 
+  
+  <feature extension="package.support.name" value="Eliot Kimber"/>
+  <feature extension="package.support.email" value="ekimber@contrext.com"/>  
 
   <template file="build_transtype-word2dita_template.xml"/>
   <feature extension="dita.conductor.transtype.check" value="word2dita" type="txt"/>
