@@ -988,7 +988,7 @@
   
   <xsl:template match="w:cr | w:br">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:variable name="doDebug" as="xs:boolean" select="true()"/>
+    <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
     <xsl:if test="true() or $doDebug">
       <xsl:message> + [DEBUG] <xsl:value-of select="name(.)"/>: <xsl:sequence select="."/></xsl:message>
     </xsl:if>
