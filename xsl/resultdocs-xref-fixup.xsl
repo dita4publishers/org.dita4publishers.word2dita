@@ -41,7 +41,7 @@
     match="@href[starts-with(., 'urn:wordlocation:')]" 
     priority="10">
     <xsl:variable name="refDoc" 
-      as="element()"
+      as="element()?"
       select="ancestor::rsiwp:result-document[1]" 
     />
     <xsl:variable name="wordLocation" as="xs:string" select="substring-after(., 'urn:wordlocation:')"/>
@@ -55,6 +55,9 @@
      
     <xsl:variable name="target" select="key('elementsByWordlocation', $wordLocation, root(.))[1]"/>
     <xsl:choose>
+      <xsl:when test="not($refDoc)">
+        <xsl:message> - [WARN] refDoc is not set for @href "<xsl:value-of select="."/>"</xsl:message>
+      </xsl:when>
       <xsl:when test="$target">
         <!-- Construct the fragment identifier and, if appropriate, the resource
              part of the URL.

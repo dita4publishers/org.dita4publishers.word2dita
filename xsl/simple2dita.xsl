@@ -2521,7 +2521,7 @@
     
 
     <xsl:variable name="bookmarkName" as="xs:string" select="$hyperlinkElem/@href"/>
-    <xsl:variable name="bookmark" select="key('bookmarksByName', $hyperlinkElem/@href, $simpleWpDoc)"/>
+    <xsl:variable name="bookmark" select="key('bookmarksByName', $hyperlinkElem/@href, $simpleWpDoc)[1]"/>
 <!--    <xsl:message> + [DEBUG] + bookmarkRefToDitaRef(): bookmark=<xsl:sequence select="$bookmark"/></xsl:message>-->
     <xsl:variable name="targetPara" as="element()?"
       select="$bookmark/ancestor::rsiwp:p[1]
