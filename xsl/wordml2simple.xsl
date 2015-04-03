@@ -773,7 +773,7 @@
       -->
     <xsl:param name="tcElement" as="element(w:tc)"/>
     <xsl:variable name="jcValue" as="xs:string?"
-      select="$tcElement/w:p/w:pPr/w:jc/@w:val"
+      select="($tcElement/w:p/w:pPr/w:jc)[1]/@w:val"
      />
     <!-- See section 17.18.44 in the Office Open XML spec
          for details on the values.
