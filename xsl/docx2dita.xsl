@@ -163,7 +163,8 @@ version="2.0">
     href="modeTopicUrl.xsl"/>
   <xsl:include
     href="resultdocs-xref-fixup.xsl"/>
-  
+  <xsl:include 
+    href="omml2mml.xsl"/>
   
   <xsl:template
     match="/"
