@@ -1965,9 +1965,19 @@
   
   <xsl:template match="m:math" mode="p-content">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <d4p_MathML> 
-      <xsl:apply-templates select="." mode="fixup-mathml-namespace" />
-    </d4p_MathML>
+    <xsl:choose>
+      <xsl:when test="$isDita13">
+        <mathml> 
+          <xsl:apply-templates select="." mode="fixup-mathml-namespace" />
+        </mathml>
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- if not DITA 1.3, then assume 1.2 -->
+        <d4p_MathML> 
+          <xsl:apply-templates select="." mode="fixup-mathml-namespace" />
+        </d4p_MathML>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <!-- We need to make sure the namespace prefix for all MathML elements is "m:", simply having a
