@@ -1965,10 +1965,25 @@
   
   <xsl:template match="m:math" mode="p-content">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <mathml>
-      <xsl:sequence select="."/>
-    </mathml>
+    <d4p_MathML> 
+      <xsl:apply-templates select="." mode="fixup-mathml-namespace" />
+    </d4p_MathML>
   </xsl:template>
+  
+  <!-- We need to make sure the namespace prefix for all MathML elements is "m:", simply having a
+  node without a prefix but a @xmlns is not sufficient, for some reason -->
+  <xsl:template match="m:*" mode="fixup-mathml-namespace">
+    <xsl:element name="m:{local-name()}">
+      <xsl:apply-templates select="@*|node()" mode="#current"/>
+    </xsl:element>
+  </xsl:template>
+  
+  <xsl:template match="@*|node()" mode="fixup-mathml-namespace">
+    <xsl:copy>
+      <xsl:apply-templates select="@*|node()" mode="#current"/>
+    </xsl:copy>
+  </xsl:template>
+  
   
   <xsl:template match="rsiwp:fn" mode="p-content">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
