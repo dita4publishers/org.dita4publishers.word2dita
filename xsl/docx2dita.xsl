@@ -65,6 +65,17 @@ version="2.0">
   
   <xsl:param name="rawPlatformString" select="'unknown'" as="xs:string"/>
   
+  <!-- Because MathML container will be different in DITA 1.3, we need to allow for setting the
+    intended version. The version is noted in the topic shells, but we cannot access that info
+  from within XSLT/XPATH. Default value is 1.2. -->
+  <xsl:param name="ditaVersion" select="'1.2'" as="xs:string" />
+  
+  <!-- Because we only have differences between DITA 1.2 and DITA 1.3 (right now), if $ditaVersion is
+    not 1.3, then assume 1.2 -->
+  <xsl:variable name="isDita12" as="xs:boolean" select="if ($ditaVersion ne '1.3') then true() else false()" />
+  
+  <xsl:variable name="isDita13" as="xs:boolean" select="if ($ditaVersion = ('1.3')) then true() else false()" />
+  
   <!-- When true, use any external (linked) filename as the name for referenced graphics,
        rather than the internal names. Note that tools that deal with the graphic files
        extracted from the DOCX file will have to know how the internal names map to external
