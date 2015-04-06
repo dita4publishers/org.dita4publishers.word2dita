@@ -357,6 +357,26 @@
     </p>
     
   </xsl:template>
+  
+  <xsl:template match="m:oMathPara">
+    <math xmlns="http://www.w3.org/1998/Math/MathML"> 
+      <!-- do NOT use "m:" here, that is bound to the Word math namespace -->  
+      <xsl:apply-templates />
+    </math>
+  </xsl:template>
+  
+  <xsl:template match="m:oMath">
+    <!-- pass through, not part of omml2mml.xsl; the m:* catch-all would catch this but including
+    it here in case we need to get explicit in the future -->
+      <xsl:apply-templates />
+  </xsl:template>
+  
+  <xsl:template match="m:deg">
+    <!-- pass through, not part of omml2mml.xsl; the m:* catch-all would catch this but including
+    it here in case we need to get explicit in the future -->
+    <xsl:apply-templates />
+  </xsl:template>
+  
   <xsl:function name="local:getTagnameFromNestedProperties">
     <xsl:param name="styleData" as="element()?"/>
     <xsl:variable name="tagName" as="xs:string?">
@@ -1451,7 +1471,13 @@
     <xsl:message> - [WARNING] wordml2simple: Unhandled element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
   </xsl:template>
   
-  <xsl:template match="*" priority="-1">
+  <xsl:template match="m:*" priority="-0.5">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:message> - [WARNING] wordml2simple: Passing through unhandled word math element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
+    <xsl:apply-templates/>
+  </xsl:template>
+  
+  <xsl:template match="*[not(self::m:*)]" priority="-1">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:message> - [WARNING] wordml2simple: Unhandled element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
   </xsl:template>
