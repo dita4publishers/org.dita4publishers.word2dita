@@ -10,17 +10,12 @@
   This is a copy of the latest omml2mml stylesheet from the TEI project:
   https://github.com/TEIC/Stylesheets/blob/master/docx/from/omml2mml.xsl
   
-  It is not clear if this stylesheet, which originally comes from Microsoft,
-  is governed under any license. 
+  The omml2mml.xsl stylesheet originally came from Microsoft and does not appear to be governed 
+  under any license. The TEI project contributors made significant improvements to the original 
+  stylesheet. 
   
-  TEI stylesheets are typically licensed under BSD (http://www.opensource.org/licenses/BSD-2-Clause) and Creative Commons Attribution-ShareAlike 3.0 Unported License http://creativecommons.org/licenses/by-sa/3.0/
-  
-  A sample of their license:
-  https://github.com/TEIC/Stylesheets/blob/master/docx/from/maths.xsl
-  
-  The licenses do not make any relevant demands on this stylesheet's usage
-  except that if the above licenses apply, then we have to include copyright,
-  attribution, etc. info.
+  Our thanks to the TEI project contributors for their improvements. If we make any improvements,
+  then we will pass them onto the TEI project contributors for their consideration.
   
   NOTE:
   -If we update this file with a new version, then we should remember to delete or
