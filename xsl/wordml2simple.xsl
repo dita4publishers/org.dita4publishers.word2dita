@@ -145,7 +145,6 @@
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="mapUnstyledParasTo" select="'Normal'" tunnel="yes"/>
     <xsl:param name="stylesDoc" as="document-node()" tunnel="yes"/>
-    <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
     
     <xsl:variable name="specifiedStyleId" as="xs:string"
       select="string(./w:pPr/w:pStyle/@w:val)"
