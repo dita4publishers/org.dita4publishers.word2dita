@@ -112,13 +112,20 @@ version="2.0">
     name="debugBoolean"
     as="xs:boolean"
     select="matches($debug, 'true|yes|1|on', 'i')"/>
+  
+  <!-- Ensure that the root topic name has a value. -->
+  <xsl:variable name="finalRootTopicName" as="xs:string"
+       select="if ($rootTopicName)
+                  then $rootTopicName
+                  else if ($rootMapName)
+                          then $rootMapName
+                          else 'root-topic'"
+  />
 
   <xsl:variable name="rootMapUrl" select="concat($rootMapName, '.ditamap')" as="xs:string"/>
   <xsl:variable name="rootTopicUrl" 
     as="xs:string?" 
-    select="if ($rootTopicName) 
-    then concat($rootTopicName, $topicExtension)
-    else ()"/>
+    select="concat($finalRootTopicName, $topicExtension)"/>
   <xsl:variable name="platform" as="xs:string"
     select="
     if (starts-with($rawPlatformString, 'Win') or 
@@ -349,7 +356,7 @@ version="2.0">
       + styleMapUri     = "<xsl:sequence select="$styleMapUri"/>"
       + mediaDirUri     = "<xsl:sequence select="$mediaDirUri"/>"  
       + rootMapName     = "<xsl:sequence select="$rootMapName"/>"
-      + rootTopicName   = "<xsl:sequence select="$rootTopicName"/>"
+      + rootTopicName   = "<xsl:sequence select="$rootTopicName"/>" (<xsl:value-of select="$finalRootTopicName"/>)
       + submapNamePrefix= "<xsl:sequence select="$submapNamePrefix"/>"      
       + rootMapUrl      = "<xsl:sequence select="$rootMapUrl"/>"
       + rootTopicUrl    = "<xsl:sequence select="$rootTopicUrl"/>"
