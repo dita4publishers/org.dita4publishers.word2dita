@@ -211,8 +211,9 @@
 			<param name="styleMapUri" expression="${styleMapUri.url}"/>
 			<param name="mediaDirUri" expression="${mediaDirUri.url}" if="w2d.media.dir"/>
 			<param name="rootMapName" expression="${w2d.root.map.name}" if="w2d.root.map.name"/>			
-			<param name="rootTopicName" expression="${w2d.root.topic.name}" if="w2d.root.topic.name"/>			
+		  <!-- NOTE: Last value specified wins, so put w2d.root.topic.name last -->
 			<param name="rootTopicName" expression="${w2d.root.map.name}" if="w2d.root.map.name"/>			
+			<param name="rootTopicName" expression="${w2d.root.topic.name}" if="w2d.root.topic.name"/>			
 			<param name="submapNamePrefix" expression="${w2d.submap.name.prefix}" if="w2d.submap.name.prefix"/>			
 			<param name="outputDir" expression="${outputDir.url}"/>
 			<param name="debug" expression="${w2d.debug.xslt}"/>
