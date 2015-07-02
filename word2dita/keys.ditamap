@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//OASIS//DTD DITA Map//EN" "map.dtd">
+<map>
+  <keydef keys="word2dita-intro" href="word2dita-intro.xml"/>
+  <keydef keys="word2dita-start" href="w2d-getting-started.xml"/>
+  <keydef keys="word2dita-usage" href="word-to-dita-plugin-usage.xml"/>
+  <keydef keys="word2dita-ant-task" href="word-to-dita-ant-task.xml"/>
+  <keydef keys="word2dita-oxygen" href="word2dita-from-oxygen.xml"/>
+  <keydef keys="word2dita-style2map" href="style-to-tag-map-overview.xml"/>
+  <keydef keys="word2dita-mapping-case"  href="common-mapping-cases.xml"/>
+  <keydef keys="word2dita-troubleshooting" href="troubleshooting-word2dita.xml"/>
+  <keydef keys="word2dita-video-tutorial" href="word2dita-video-tutorial-01.xml"/>
+  <keydef keys="word2dita-customizing" href="customizing-the-transform.xml"/>
+  <keydef keys="word2dita-sample-customizing" href="sample-customization-transform.xml"/>
+  <keydef keys="word2dita-tips" href="word-usage-tips.xml"/>
+  <keydef keys="word2dita-transform-parameters" href="transform-parameters.xml"/>
+  <keydef keys="word2dita-ant-parameters" href="word2dita-ant-parameters.xml"/>
+</map>

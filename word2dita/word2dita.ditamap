@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE pubmap PUBLIC "urn:pubid:dita4publishers.org:doctypes:dita:dtd:pubmap" "urn:pubid:dita4publishers.org:doctypes:dita:dtd:pubmap">
+<pubmap>
+ <mapref href="keys.ditamap"/>
+  <chapter keyref="word2dita-intro">
+    <subsection keyref="word2dita-start"/>
+    <subsection keyref="word2dita-usage">
+       <subsection keyref="word2dita-ant-task"/>
+    </subsection>
+    <subsection keyref="word2dita-oxygen"/>
+    <subsection keyref="word2dita-style2map" collection-type="sequence"/>
+    <subsection keyref="word2dita-mapping-case"/>
+    <subsection keyref="word2dita-troubleshooting"/>
+    <subsection keyref="word2dita-video-tutorial"/>
+    <subsection keyref="word2dita-customizing">
+      <subsection keyref="word2dita-sample-customizing"/>
+    </subsection>
+    <subsection keyref="word2dita-tips"/>
+    <subsection keyref="word2dita-transform-parameters"/>
+    <subsection keyref="word2dita-ant-parameters"/>
+   </chapter>
+</pubmap>
