@@ -701,11 +701,11 @@
       <tgroup>
         <!-- add colspan data here -->
         <xsl:attribute name="cols" select="count(rsiwp:cols/rsiwp:col)"/>
-        <xsl:call-template name="create-colspec"/>        
+        <xsl:call-template name="create-colspec"/>      
         <xsl:choose>
           <xsl:when test="rsiwp:thead">
             <thead>
-              <xsl:apply-templates select="rsiwp:thead/rsiwp:tr"/> <!-- FIXME: will this select anything? -->
+              <xsl:apply-templates select="rsiwp:thead/rsiwp:tr"/>
             </thead>
           </xsl:when>
           <xsl:when test="rsiwp:tr[rsiwp:th and not(rsiwp:td)]"> <!-- FIXME: Will this ever select anything? I don't think we make rsiwp:th in wordml2simple -->
