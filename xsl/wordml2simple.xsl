@@ -739,6 +739,12 @@
           </xsl:for-each>
         </cols>
       </xsl:if>
+      <!-- FIXME: Really need to handle any header rows and then
+                  body rows so they can be properly grouped.
+                  Current code assumes at most one header row.
+                  
+                  See template for w:tr.
+        -->
       <xsl:apply-templates select="*[not(self::w:tblPr)]"/>
     </table>
   </xsl:template>
@@ -883,15 +889,25 @@
   
   <xsl:template match="w:tr">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:variable name="tagName" as="xs:string"
-      select="
-      if (w:trPr/w:tblHeader) then 'thead' else 'tr'
-      "
+    <xsl:variable name="isHeaderRow" as="xs:boolean"
+      select="boolean(w:trPr/w:tblHeader)"
     />
-    <xsl:element name="{$tagName}">
-      <xsl:apply-templates select="w:trPr/*|w:tblPrEx/*"/>
-      <xsl:apply-templates select="*[name()!='w:trPr' and name()!='w:tblPrEx']"/>
-    </xsl:element>
+    <xsl:variable name="tr" as="element()">
+     <xsl:element name="tr">
+       <xsl:apply-templates select="w:trPr/*|w:tblPrEx/*"/>
+       <xsl:apply-templates select="*[name()!='w:trPr' and name()!='w:tblPrEx']"/>
+     </xsl:element>
+    </xsl:variable>
+   <xsl:choose>
+     <xsl:when test="$isHeaderRow">
+       <thead>
+         <xsl:sequence select="$tr"/>
+       </thead>
+     </xsl:when>
+     <xsl:otherwise>
+       <xsl:sequence select="$tr"/>
+     </xsl:otherwise>     
+   </xsl:choose>
   </xsl:template>
   
   <xsl:template match="w:tc">
