@@ -91,11 +91,6 @@ version="2.0">
      select="matches($warnOnUnstyledParas, 'yes|true|1', 'i')"
   />
   
-  <xsl:param name="saveIntermediateDocs" as="xs:string" select="'false'"/>
-  <xsl:variable name="doSaveIntermediateDocs" as="xs:boolean" 
-    select="$debugBoolean or matches($saveIntermediateDocs, 'true|yes|1|on', 'i')"
-  />
-
   <!-- When true, use topic titles as navigation titles in generated
        topicrefs.
     -->
@@ -112,6 +107,11 @@ version="2.0">
     name="debugBoolean"
     as="xs:boolean"
     select="matches($debug, 'true|yes|1|on', 'i')"/>
+  
+  <xsl:param name="saveIntermediateDocs" as="xs:string" select="'false'"/>
+  <xsl:variable name="doSaveIntermediateDocs" as="xs:boolean" 
+    select="$debugBoolean or matches($saveIntermediateDocs, 'true|yes|1|on', 'i')"
+  />  
   
   <!-- Ensure that the root topic name has a value. -->
   <xsl:variable name="finalRootTopicName" as="xs:string"
