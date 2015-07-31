@@ -579,6 +579,18 @@
       <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
     </xsl:apply-templates>
   </xsl:template>
+  
+  <!-- Elements for special characters -->
+  
+  <xsl:template match="w:noBreakHyphen">
+    <!-- Unicode Character 'NON-BREAKING HYPHEN' (U+2011) -->
+    <xsl:text>&#x2011;</xsl:text> 
+  </xsl:template>
+  
+  <xsl:template match="w:softHyphen">
+    <!-- Unicode Character 'SOFT HYPHEN' (U+00AD) -->
+    <xsl:text>&#x00AD;</xsl:text>
+  </xsl:template>
 
   <xsl:template match="w:r[w:rPr/w:rFonts[w:rPr/w:rFonts/@w:ascii = ('Symbol', 'Wingdings')]]" priority="10">
     <xsl:variable name="fontFace" as="xs:string?"
