@@ -583,8 +583,11 @@
   <!-- Elements for special characters -->
   
   <xsl:template match="w:noBreakHyphen">
-    <!-- Unicode Character 'NON-BREAKING HYPHEN' (U+2011) -->
-    <xsl:text>&#x2011;</xsl:text> 
+    <!-- NOTE: The non-breaking hyphen character is \u2011 but it looks like
+               FOP's default fonts don't have this character, so mapping to
+               regular hyphen.
+      -->
+    <xsl:text>-</xsl:text> 
   </xsl:template>
   
   <xsl:template match="w:softHyphen">
