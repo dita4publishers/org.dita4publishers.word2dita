@@ -1248,7 +1248,7 @@
     <xsl:variable name="schemaAtts" as="attribute()*">
       <xsl:choose>
         <xsl:when test="$makeDoc">
-          <xsl:if test="$format/@noNamespaceSchemalocation">
+          <xsl:if test="$format/@noNamespaceSchemaLocation">
             <xsl:attribute name="xsi:noNamespaceSchemaLocation"
               select="string($format/@noNamespaceSchemaLocation)"
             />
