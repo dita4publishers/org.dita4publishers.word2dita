@@ -214,7 +214,6 @@
 		  <!-- NOTE: Last value specified wins, so put w2d.root.topic.name last -->
 			<param name="rootTopicName" expression="${w2d.root.map.name}" if="w2d.root.map.name"/>			
 			<param name="rootTopicName" expression="${w2d.root.topic.name}" if="w2d.root.topic.name"/>			
-			<param name="submapNamePrefix" expression="${w2d.submap.name.prefix}" if="w2d.submap.name.prefix"/>			
 			<param name="outputDir" expression="${outputDir.url}"/>
 			<param name="debug" expression="${w2d.debug.xslt}"/>
     	<param name="rawPlatformString" expression="${os.name}"/>
@@ -224,7 +223,7 @@
       <param name="topicExtension" expression="${w2d.topic.extension}" if="w2d.topic.extension"/>
       <param name="includeWordBookmarks" expression="${w2d.include.word.bookmarks}" if="w2d.include.word.bookmarks"/>
       <param name="fileNamePrefix" expression="${w2d.filename.prefix}" if="w2d.filename.prefix"/>
-      <param name="submapNamePrefix" expression="${w2d.submap.name.prefix}" if="w2d.submap.name.prefix"/>
+			<param name="submapNamePrefix" expression="${w2d.submap.name.prefix}" if="w2d.submap.name.prefix"/>			
 			<param name="language" expression="${w2d.language}" if="w2d.language"/>
 		  <param name="generateNavtitles" expression="${w2d.generate.navtitles}"
 		     if="w2d.generate.navtitles"
