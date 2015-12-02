@@ -49,7 +49,10 @@
          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$debugBoolean"/>
       </xsl:apply-templates>    
     </xsl:variable>
-    <xsl:if
+    <!-- This debug action fails because we're already in the process of generating 
+         a result document.
+      -->
+<!--    <xsl:if
       test="$doSaveIntermediateDocs">
       <xsl:variable
         name="tempDocFixup"
@@ -63,7 +66,7 @@
           select="$structureNoContainerTypes"/>
       </xsl:result-document>
     </xsl:if>
-<!--    <xsl:sequence select="$structureNoContainerTypes"/>-->
+--><!--    <xsl:sequence select="$structureNoContainerTypes"/>-->
     <xsl:apply-templates select="$structureNoContainerTypes" mode="handleContainerTypes">
        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
     </xsl:apply-templates>

@@ -579,6 +579,21 @@
       <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
     </xsl:apply-templates>
   </xsl:template>
+  
+  <!-- Elements for special characters -->
+  
+  <xsl:template match="w:noBreakHyphen">
+    <!-- NOTE: The non-breaking hyphen character is \u2011 but it looks like
+               FOP's default fonts don't have this character, so mapping to
+               regular hyphen.
+      -->
+    <xsl:text>-</xsl:text> 
+  </xsl:template>
+  
+  <xsl:template match="w:softHyphen">
+    <!-- Unicode Character 'SOFT HYPHEN' (U+00AD) -->
+    <xsl:text>&#x00AD;</xsl:text>
+  </xsl:template>
 
   <xsl:template match="w:r[w:rPr/w:rFonts[w:rPr/w:rFonts/@w:ascii = ('Symbol', 'Wingdings')]]" priority="10">
     <xsl:variable name="fontFace" as="xs:string?"
@@ -772,6 +787,21 @@
     <xsl:attribute name="colsep" select="'1'"/>
   </xsl:template>
   
+  <xsl:function name="local:cellPos" as="xs:integer">
+    <xsl:param name="cell" as="element()"/>
+    <xsl:variable name="cellCounts" as="xs:integer*"
+      select="for $c in $cell/preceding-sibling::w:tc
+                  return if ($c/w:tcPr/w:gridSpan/@w:val)
+                            then xs:integer($c/w:tcPr/w:gridSpan/@w:val)
+                            else 1
+                    "
+    />
+    <xsl:variable name="result" as="xs:integer"
+       select="sum($cellCounts, 1)"
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:function>
+  
   <xsl:function name="local:calculateTableCellHorizontalAlignment" as="xs:string?">
     <!-- Returns the appropriate value for the CALS @align attribute or nothing
          if the alignment is unspecified.
@@ -923,9 +953,7 @@
     <xsl:variable name="tblCount" select="count(ancestor::w:tbl)"/>
     <xsl:variable name="curCellInContext"
       select="ancestor::w:tr[1]/*[count($curCell|descendant-or-self::*)=count(descendant-or-self::*)]"/>
-    <xsl:variable name="numCellsBefore"
-      select="count($curCellInContext/preceding-sibling::*[descendant-or-self::*[name()='w:tc' and (count(ancestor::w:tbl)=$tblCount)]])"/>
-    
+    <xsl:variable name="curCellPos" as="xs:integer" select="local:cellPos(.)"/>
     <xsl:variable name="horizontalAlignment" as="xs:string?"
       select="local:calculateTableCellHorizontalAlignment(.)"
     />
@@ -955,16 +983,15 @@
               <xsl:variable name="myRowInContext"
                 select="$myRow/ancestor::w:tbl[1]/*[count($myRow|descendant-or-self::*)=count(descendant-or-self::*)]"/>
               <xsl:variable name="belowCurCell"
-                select="$myRowInContext/following-sibling::*//w:tc[count(ancestor::w:tbl)=$tblCount][$numCellsBefore + 1]"/>
+                select="$myRowInContext/following-sibling::*//w:tc[count(ancestor::w:tbl)=$tblCount][$curCellPos = local:cellPos(.)]"/>
               <xsl:variable name="NextRestart"
                 select="($belowCurCell//w:tcPr/w:vMerge[@w:val='restart'])[1]"/>
               <xsl:variable name="NextRestartInContext"
                 select="$NextRestart/ancestor::w:tbl[1]/*[count($NextRestart|descendant-or-self::*)=count(descendant-or-self::*)]"/>
               <xsl:variable name="mergesAboveMe"
-                select="count($myRowInContext/preceding-sibling::*[(descendant-or-self::*[name()='w:tc'])[$numCellsBefore + 1][descendant-or-self::*[name()='w:vMerge']]])"/>
+                select="count($myRowInContext/preceding-sibling::*[(descendant-or-self::*[name()='w:tc'])[$curCellPos = local:cellPos(.)][descendant-or-self::*[name()='w:vMerge']]])"/>
               <xsl:variable name="mergesAboveNextRestart"
-                select="count($NextRestartInContext/preceding-sibling::*[(descendant-or-self::*[name()='w:tc'])[$numCellsBefore + 1][descendant-or-self::*[name()='w:vMerge']]])"/>
-              
+                select="count($NextRestartInContext/preceding-sibling::*[(descendant-or-self::*[name()='w:tc'])[$curCellPos = local:cellPos(.)]])"/>
               <xsl:choose>
                 <xsl:when test="$NextRestart">
                   <xsl:value-of select="$mergesAboveNextRestart - $mergesAboveMe"
@@ -1004,7 +1031,7 @@
   <xsl:template match="w:cr | w:br">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
-    <xsl:if test="true() or $doDebug">
+    <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] <xsl:value-of select="name(.)"/>: <xsl:sequence select="."/></xsl:message>
     </xsl:if>
     <xsl:if test="not($filterBrBoolean)">
