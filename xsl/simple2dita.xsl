@@ -245,7 +245,11 @@
       <xsl:element name="{@mapType}">
         <xsl:sequence select="$schemaAtts"/>
         <xsl:call-template name="generateXtrcAtt"/>  
-        <xsl:attribute name="xml:lang" select="$language"/>
+        <xsl:attribute name="xml:lang" 
+            select="if (@langAttValue) 
+                       then string(@langAttValue) 
+                       else $language"
+        />
         <xsl:attribute name="isMap" select="'true'"/>
         
         <!-- The first paragraph can simply trigger a (possibly) untitled map, or
@@ -603,6 +607,9 @@
             <xsl:with-param name="idGenerator" select="$idGenerator" as="xs:string"/>
             <xsl:with-param name="tagName" select="$tagName" as="xs:string"/>
           </xsl:apply-templates>
+          <xsl:if test="@langAttValue != ''">
+            <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
+          </xsl:if>                    
           <xsl:call-template name="transformParaContent"/>    
         </xsl:element>
       </xsl:otherwise>
@@ -697,6 +704,9 @@
           <xsl:attribute name="pgwide">1</xsl:attribute>
         </xsl:when>
       </xsl:choose>
+      <xsl:if test="@langAttValue != ''">
+        <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
+      </xsl:if>
       
       <tgroup>
         <!-- add colspan data here -->
@@ -1122,6 +1132,9 @@
             <xsl:if test="@outputclass">
               <xsl:attribute name="outputclass" select="string(@outputclass)"/>
             </xsl:if>
+            <xsl:if test="@langAttValue != ''">
+              <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
+            </xsl:if>
             <xsl:apply-templates mode="#current"/>
           </xsl:element>
         </xsl:element>
@@ -1131,6 +1144,9 @@
           <xsl:call-template name="generateXtrcAtt"/>
           <xsl:if test="@outputclass">
             <xsl:attribute name="outputclass" select="string(@outputclass)"/>
+          </xsl:if>
+          <xsl:if test="@langAttValue != ''">
+            <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
           </xsl:if>
           <xsl:apply-templates mode="#current"/>
         </xsl:element>
@@ -1440,7 +1456,11 @@
         <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
       </xsl:call-template>
       <xsl:attribute name="isTopic" select="'true'"/>      
-      <xsl:attribute name="xml:lang" select="$language"/>
+      <xsl:attribute name="xml:lang" 
+        select="if (@langAttValue) 
+        then string(@langAttValue) 
+        else $language"
+      />
       <!-- Indicate that this element is in fact a topic as there's no other way
            to know this during the result document processing phase.
         -->
@@ -1917,7 +1937,10 @@
             <xsl:if test="@outputclass">
               <xsl:attribute name="outputclass" select="string(@outputclass)"/>
             </xsl:if>
-            <xsl:sequence select="./@*"/>
+            <xsl:if test="@langAttValue != ''">
+              <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
+            </xsl:if>
+            <xsl:sequence select="./@* except(@langAttValue)"/>            
             <xsl:apply-templates mode="p-content"/>
           </xsl:element>
         </xsl:element>
@@ -1928,7 +1951,9 @@
           <xsl:if test="@outputclass">
             <xsl:attribute name="outputclass" select="string(@outputclass)"/>
           </xsl:if>
-          <xsl:sequence select="./@*"/>
+          <xsl:if test="@langAttValue != ''">
+            <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
+          </xsl:if>
           <xsl:apply-templates mode="p-content"/>
         </xsl:element>
       </xsl:otherwise>
@@ -2093,6 +2118,9 @@
         </xsl:if>
         <xsl:if test="$format">
           <xsl:attribute name="format" select="$format"/>
+        </xsl:if>
+        <xsl:if test="@langAttValue != ''">
+          <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
         </xsl:if>
       </xsl:if>
       <xsl:apply-templates mode="#current"/>
