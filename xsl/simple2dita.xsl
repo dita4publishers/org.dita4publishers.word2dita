@@ -198,12 +198,52 @@
       <xsl:message> + [DEBUG] rsiwp:map:    newMapUrl="<xsl:value-of select="$newMapUrl"/>"</xsl:message>
     </xsl:if>
     
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] rsiwp:map: newMapUrl="<xsl:value-of select="$newMapUrl"/>"</xsl:message>
+    </xsl:if>
+    
+    <xsl:variable name="resultUrl" as="xs:string"
+      select="$newMapUrl"
+    />
+    
+    <xsl:message> + [INFO] makeMap: Creating new map document "<xsl:sequence select="$resultUrl"/>"...</xsl:message>
+    
     <xsl:variable name="formatName" select="@format" as="xs:string?"/>
     
     <xsl:variable name="format" select="key('formats', $formatName, $styleMapDoc)[1]" as="element()?"/>
     <xsl:if test="not($format)">
       <xsl:message terminate="yes"> + [ERROR] map: Failed to find &lt;output&gt; element for @mapFormat value "<xsl:value-of select="$formatName"/>" specified for style "<xsl:value-of select="@styleName"/>" <xsl:value-of select="concat(' [', @styleId, ']')"/>. Check your style-to-tag mapping.</xsl:message>
     </xsl:if>
+    
+    <xsl:variable name="mapElement" as="node()*">
+      <xsl:call-template name="constructMap">
+        <xsl:with-param name="format" as="element()" select="$format"/>
+        <xsl:with-param name="mapUrl" as="xs:string" select="$newMapUrl"/>
+      </xsl:call-template>
+    </xsl:variable>
+    
+    
+    <rsiwp:result-document href="{$resultUrl}"
+      doctype-public="{$format/@doctype-public}"
+      doctype-system="{$format/@doctype-system}"
+      indent="yes"
+      >
+      <xsl:message> + [INFO] Applying final-fixup mode to <xsl:sequence select="$resultUrl"/>...</xsl:message>
+      <xsl:apply-templates select="$mapElement" mode="final-fixup">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>      
+    </rsiwp:result-document>
+    
+    <xsl:if test="$doDebug">        
+      <xsl:message> + [DEBUG] rsiwp:map: Done.</xsl:message>
+    </xsl:if>
+  </xsl:template>
+  
+  <xsl:template name="constructMap">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:param name="format" as="element()"/>
+    <xsl:param name="mapUrl" as="xs:string"/>
     
     <xsl:variable name="schemaAtts" as="attribute()*">
       <xsl:if test="$format/@noNamespaceSchemaLocation">
@@ -226,33 +266,17 @@
       "
     />
     
-    <xsl:if test="$doDebug">
-      <xsl:message> + [DEBUG] rsiwp:map: newMapUrl="<xsl:value-of select="$newMapUrl"/>"</xsl:message>
-    </xsl:if>
-    
-    <xsl:variable name="resultUrl" as="xs:string"
-      select="$newMapUrl"
-    />
-    
-    <xsl:message> + [INFO] makeMap: Creating new map document "<xsl:sequence select="$resultUrl"/>"...</xsl:message>
-    
-    
-    <rsiwp:result-document href="{$resultUrl}"
-      doctype-public="{$format/@doctype-public}"
-      doctype-system="{$format/@doctype-system}"
-      indent="yes"
-      >
-      <xsl:element name="{@mapType}">
-        <xsl:sequence select="$schemaAtts"/>
-        <xsl:call-template name="generateXtrcAtt"/>  
-        <xsl:attribute name="xml:lang" 
-            select="if (@langAttValue) 
-                       then string(@langAttValue) 
-                       else $language"
-        />
-        <xsl:attribute name="isMap" select="'true'"/>
-        
-        <!-- The first paragraph can simply trigger a (possibly) untitled map, or
+    <xsl:element name="{@mapType}">
+      <xsl:sequence select="$schemaAtts"/>
+      <xsl:call-template name="generateXtrcAtt"/>  
+      <xsl:attribute name="xml:lang" 
+        select="if (@langAttValue) 
+        then string(@langAttValue) 
+        else $language"
+      />
+      <xsl:attribute name="isMap" select="'true'"/>
+      
+      <!-- The first paragraph can simply trigger a (possibly) untitled map, or
           it can also be the map title. If it's the map title, generate it.
           First paragraph can also generate a root topicref and/or a topicref
           to a topic in addition to the map.
@@ -261,43 +285,39 @@
           if the structureType or secondStructureType is topicTitle, map, or mapTitle: the
           result will be the same, a new map and a new topic.
         -->
-        <xsl:apply-templates select="rsiwp:maptitle">
-          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-        </xsl:apply-templates>
-        
-        <!-- Gather any paragraphs that contribute to the root map's map-level metadata: -->
-        <xsl:if test="*[string(@topicZone) = 'topicmeta' and string(@containingTopic) = 'rootmap']">
-          <xsl:variable name="prologParas" select="*[string(@topicZone) = 'topicmeta' and string(@containingTopic) = 'rootmap']" as="node()*"/>
-          <!-- Now process any map-level topic metadata paragraphs. -->
-          <xsl:element name="{$prologType}">
-            <xsl:call-template name="generateXtrcAtt"/>
-            <xsl:call-template name="handleTopicProlog">
-              <xsl:with-param name="content" select="$prologParas"/>
-            </xsl:call-template>
-          </xsl:element>
-        </xsl:if>
-        <!--<xsl:variable name="doDebug" as="xs:boolean" select="true()"/>-->
-        <xsl:if test="$doDebug">
-          <xsl:message> + [DEBUG] Applying templates to map element children...</xsl:message>
-        </xsl:if>
-        <xsl:apply-templates 
-          select="
-          rsiwp:mapref | 
-          rsiwp:topicref | 
-          rsiwp:topicGroup | 
-          rsiwp:topicHead | 
-          rsiwp:map | 
-          rsiwp:topic
-          ">
-          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-          <xsl:with-param name="parentMapUrl" as="xs:string" select="$newMapUrl" tunnel="yes"/>
-        </xsl:apply-templates>
-      </xsl:element>
-    </rsiwp:result-document>
+      <xsl:apply-templates select="rsiwp:maptitle">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
+      
+      <!-- Gather any paragraphs that contribute to the root map's map-level metadata: -->
+      <xsl:if test="*[string(@topicZone) = 'topicmeta' and string(@containingTopic) = 'rootmap']">
+        <xsl:variable name="prologParas" select="*[string(@topicZone) = 'topicmeta' and string(@containingTopic) = 'rootmap']" as="node()*"/>
+        <!-- Now process any map-level topic metadata paragraphs. -->
+        <xsl:element name="{$prologType}">
+          <xsl:call-template name="generateXtrcAtt"/>
+          <xsl:call-template name="handleTopicProlog">
+            <xsl:with-param name="content" select="$prologParas"/>
+          </xsl:call-template>
+        </xsl:element>
+      </xsl:if>
+      <!--<xsl:variable name="doDebug" as="xs:boolean" select="true()"/>-->
+      <xsl:if test="$doDebug">
+        <xsl:message> + [DEBUG] Applying templates to map element children...</xsl:message>
+      </xsl:if>
+      <xsl:apply-templates 
+        select="
+        rsiwp:mapref | 
+        rsiwp:topicref | 
+        rsiwp:topicGroup | 
+        rsiwp:topicHead | 
+        rsiwp:map | 
+        rsiwp:topic
+        ">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        <xsl:with-param name="parentMapUrl" as="xs:string" select="$mapUrl" tunnel="yes"/>
+      </xsl:apply-templates>
+    </xsl:element>
     
-    <xsl:if test="$doDebug">        
-      <xsl:message> + [DEBUG] rsiwp:map: Done.</xsl:message>
-    </xsl:if>
   </xsl:template>
   
   <xsl:template match="rsiwp:maptitle">
