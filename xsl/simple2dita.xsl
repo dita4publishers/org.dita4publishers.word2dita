@@ -696,6 +696,7 @@
       <xsl:sequence select="@frame"/>
       <xsl:sequence select="@rowsep"/>
       <xsl:sequence select="@colsep"/>
+      <xsl:sequence select="@outputclass"/>
       <xsl:choose>
         <xsl:when test="number($width) &lt; 100">
           <xsl:attribute name="pgwide">0</xsl:attribute>

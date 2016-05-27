@@ -275,9 +275,8 @@
         -->
     <p style="{$styleId}" wordLocation="{saxon:path()}">
       <xsl:sequence select="local:getTagnameFromNestedProperties($styleData)"/>
-      <xsl:for-each select="$styleData/@*">
-        <xsl:copy/>
-      </xsl:for-each>
+      <xsl:sequence select="$styleData/@*"/>
+      <xsl:apply-templates select="$styleData/stylemap:additionalAttributes"/>
       <xsl:if test="not($styleData/@topicZone)">
         <xsl:attribute name="topicZone" 
           select="'body'"
@@ -355,6 +354,14 @@
       </xsl:for-each-group>
     </p>
     
+  </xsl:template>
+  
+  <xsl:template match="stylemap:additionalAttributes">    
+    <xsl:apply-templates select="stylemap:attribute"/>
+  </xsl:template>
+  
+  <xsl:template match="stylemap:attribute">
+    <xsl:attribute name="{@name}" select="@value"/>
   </xsl:template>
   
   <xsl:template match="m:oMathPara">
@@ -493,9 +500,8 @@
         <xsl:element name="{$runTagName}">
           <xsl:attribute name="style" select="$styleId"/>
           <xsl:if test="$runStyleMap">
-            <xsl:for-each select="$runStyleMap/@*">
-              <xsl:copy/>
-            </xsl:for-each>
+            <xsl:sequence select="$runStyleMap/@*"/>
+            <xsl:apply-templates select="$runStyleMap/stylemap:additionalAttributes"/>            
           </xsl:if>
           <xsl:if test="$doDebug">
             <xsl:message> + [DEBUG] handleRunSequence: Applying templates to run sequence...</xsl:message>
