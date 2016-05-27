@@ -355,15 +355,7 @@
     </p>
     
   </xsl:template>
-  
-  <xsl:template match="stylemap:additionalAttributes">    
-    <xsl:apply-templates select="stylemap:attribute"/>
-  </xsl:template>
-  
-  <xsl:template match="stylemap:attribute">
-    <xsl:attribute name="{@name}" select="@value"/>
-  </xsl:template>
-  
+    
   <xsl:template match="m:oMathPara">
     <!-- Not 100% certain whether m:oMathPara or m:oMath should create the outer mathml element
       <math>; m:oMath must do so for inline equations; for now change this to a pass through -->
@@ -434,6 +426,8 @@
     <xsl:attribute name="generatesTopicref" select="'true'"/>
   </xsl:template>
   
+  <xsl:template mode="set-map-structure-atts" match="stylemap:additionalAttributes"/>
+  
   <xsl:template name="handleRunSequence">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="runSequence" as="element()*"/>
@@ -500,8 +494,7 @@
         <xsl:element name="{$runTagName}">
           <xsl:attribute name="style" select="$styleId"/>
           <xsl:if test="$runStyleMap">
-            <xsl:sequence select="$runStyleMap/@*"/>
-            <xsl:apply-templates select="$runStyleMap/stylemap:additionalAttributes"/>            
+            <xsl:sequence select="$runStyleMap/@*, $runStyleMap/stylemap:additionalAttributes"/>
           </xsl:if>
           <xsl:if test="$doDebug">
             <xsl:message> + [DEBUG] handleRunSequence: Applying templates to run sequence...</xsl:message>
@@ -1523,13 +1516,13 @@
   
   <xsl:template match="m:*" priority="-0.5">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:message> - [WARNING] wordml2simple: Passing through unhandled word math element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
+    <xsl:message> - [WARNING] wordml2simple: default mode: Passing through unhandled word math element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
     <xsl:apply-templates/>
   </xsl:template>
   
   <xsl:template match="*[not(self::m:*)]" priority="-1">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:message> - [WARNING] wordml2simple: Unhandled element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
+    <xsl:message> - [WARNING] wordml2simple: default mode: Unhandled element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
   </xsl:template>
   
 </xsl:stylesheet>

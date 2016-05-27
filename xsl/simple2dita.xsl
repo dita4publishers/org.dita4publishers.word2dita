@@ -610,6 +610,12 @@
           <xsl:if test="@langAttValue != ''">
             <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
           </xsl:if>                    
+          <xsl:variable name="atts" as="attribute()*" select="@*"/>
+          <xsl:for-each select="tokenize(@additionalAttributes, ' ')">
+            <xsl:variable name="attName" as="xs:string" select="string(.)"/>
+            <xsl:sequence select="$atts[name(.) = $attName]"/>
+          </xsl:for-each>
+          <xsl:apply-templates mode="#current"/>          
           <xsl:call-template name="transformParaContent"/>    
         </xsl:element>
       </xsl:otherwise>
@@ -1122,6 +1128,10 @@
     <xsl:variable name="containerType" as="xs:string?"
       select="@containerType"
     />
+    <xsl:variable name="doDebug" as="xs:boolean" select="$tagName = 'heChar'"/>
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] Handling run with tag <xsl:value-of select="$tagName"/></xsl:message>
+    </xsl:if>
     <xsl:choose>
       <xsl:when test="$containerType != ''">
         <xsl:element name="{$containerType}">
@@ -1136,6 +1146,11 @@
             <xsl:if test="@langAttValue != ''">
               <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
             </xsl:if>
+            <xsl:variable name="atts" as="attribute()*" select="@*"/>
+            <xsl:for-each select="tokenize(@additionalAttributes, ' ')">
+              <xsl:variable name="attName" as="xs:string" select="string(.)"/>
+              <xsl:sequence select="$atts[name(.) = $attName]"/>
+            </xsl:for-each>
             <xsl:apply-templates mode="#current"/>
           </xsl:element>
         </xsl:element>
