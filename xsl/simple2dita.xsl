@@ -610,16 +610,37 @@
           <xsl:if test="@langAttValue != ''">
             <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
           </xsl:if>                    
-          <xsl:variable name="atts" as="attribute()*" select="@*"/>
-          <xsl:for-each select="tokenize(@additionalAttributes, ' ')">
-            <xsl:variable name="attName" as="xs:string" select="string(.)"/>
-            <xsl:sequence select="$atts[name(.) = $attName]"/>
-          </xsl:for-each>
-          <xsl:apply-templates mode="#current"/>          
+          <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          </xsl:apply-templates>
           <xsl:call-template name="transformParaContent"/>    
         </xsl:element>
       </xsl:otherwise>
     </xsl:choose>    
+  </xsl:template>
+  
+  <xsl:template mode="#default" match="stylemap:additionalAttributes"/>
+  
+  
+  <xsl:template mode="additional-attributes" match="stylemap:additionalAttributes">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] additional-attributes: stylemap:additionalAttributes, applying templates to stylemap:attribute elements...</xsl:message>
+    </xsl:if>
+
+    <xsl:apply-templates mode="#current" select="stylemap:attribute">
+      <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+    </xsl:apply-templates>
+  </xsl:template>
+  
+  <xsl:template mode="additional-attributes" match="stylemap:attribute">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] additional-attributes: stylemap:attribute: <xsl:sequence select="."/></xsl:message>
+    </xsl:if>
+    <xsl:attribute name="{@name}" select="@value"/>
   </xsl:template>
   
   <xsl:template match="@dataName">
@@ -1147,10 +1168,9 @@
               <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
             </xsl:if>
             <xsl:variable name="atts" as="attribute()*" select="@*"/>
-            <xsl:for-each select="tokenize(@additionalAttributes, ' ')">
-              <xsl:variable name="attName" as="xs:string" select="string(.)"/>
-              <xsl:sequence select="$atts[name(.) = $attName]"/>
-            </xsl:for-each>
+            <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
+              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+            </xsl:apply-templates>
             <xsl:apply-templates mode="#current"/>
           </xsl:element>
         </xsl:element>
@@ -1164,6 +1184,9 @@
           <xsl:if test="@langAttValue != ''">
             <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
           </xsl:if>
+          <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+          </xsl:apply-templates>
           <xsl:apply-templates mode="#current"/>
         </xsl:element>
       </xsl:otherwise>
@@ -2633,7 +2656,7 @@
   
   <xsl:template match="rsiwp:*" priority="-0.5">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:message> + [WARNING] simple2dita: Unhandled element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
+    <xsl:message> + [WARNING] simple2dita[default mode]: Unhandled element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
   </xsl:template>
   
 </xsl:stylesheet>
