@@ -746,10 +746,10 @@
       <xsl:sequence select="@outputclass"/>
       <xsl:choose>
         <xsl:when test="number($width) &lt; 100">
-          <xsl:attribute name="pgwide">0</xsl:attribute>
+          <xsl:attribute name="pgwide" select="'0'"/>
         </xsl:when>
         <xsl:when test="string-length($width)">
-          <xsl:attribute name="pgwide">1</xsl:attribute>
+          <xsl:attribute name="pgwide" select="'1'"/>
         </xsl:when>
       </xsl:choose>
       <xsl:if test="@langAttValue != ''">
@@ -902,14 +902,30 @@
   
   <xsl:template name="create-colspec">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-      <xsl:for-each select="rsiwp:cols/rsiwp:col">
-            <colspec>
-              <xsl:attribute name="colname" select="local:constructColumnName(.)"/>
-              <xsl:sequence select="@align"/>
-              <xsl:sequence select="@colwidth"/>
-            </colspec>
-      </xsl:for-each>
-    </xsl:template>
+    <xsl:variable name="rawColwidths" as="xs:double*"
+      select="for $a in rsiwp:cols/rsiwp:col/@colwidth 
+                  return xs:double(substring-before($a, 'pt'))"
+    />
+    <xsl:variable name="smallest" as="xs:double"
+      select="min($rawColwidths)" 
+    
+    />
+    
+    <xsl:for-each select="rsiwp:cols/rsiwp:col">
+      <!-- The @colwidth value is always points -->
+      <xsl:variable name="pos" as="xs:integer" select="position()"/>
+      <xsl:variable name="colwidth" as="xs:string"
+        select="if ($tableWidthsProportionalBoolean) 
+                   then concat(format-number(($rawColwidths[$pos] div $smallest), '#####.#'), '*')
+                   else concat($rawColwidths[$pos], 'pt')"
+      />
+      <colspec>
+        <xsl:attribute name="colname" select="local:constructColumnName(.)"/>
+        <xsl:sequence select="@align"/>
+        <xsl:attribute name="colwidth" select="$colwidth"/>
+      </colspec>
+    </xsl:for-each>
+  </xsl:template>
     
     
     <!-- Determine which column the current entry sits in. Count the current entry,

@@ -61,7 +61,13 @@ version="2.0">
   <xsl:param name="topicExtension" select="'.dita'" as="xs:string"/><!-- Extension for generated topic files -->
   <xsl:param name="fileNamePrefix" select="''" as="xs:string"/><!-- Prefix for genenerated file names -->
   <xsl:param name="chartsAsTables" select="'false'" as="xs:string"/><!-- When true, capture Word charts as tables with the chart data -->
-  <xsl:variable name="chartsAsTablesBoolean" as="xs:boolean" select="$chartsAsTables = 'true'"/>
+  <xsl:variable name="chartsAsTablesBoolean" as="xs:boolean" 
+    select="matches($chartsAsTables, 'true|yes|on|1', 'i')"/>
+
+  <xsl:param name="tableWidthsProportional" as="xs:string" select="'false'"/>
+  <xsl:variable name="tableWidthsProportionalBoolean" as="xs:boolean"
+    select="matches($tableWidthsProportional, 'true|yes|on|1', 'i')"
+  />  
   
   <xsl:param name="rawPlatformString" select="'unknown'" as="xs:string"/>
   
@@ -381,7 +387,8 @@ version="2.0">
       + debug           = "<xsl:sequence select="$debug"/>"
       + includeWordBackPointers= "<xsl:sequence select="$includeWordBackPointersBoolean"/>"  
       + chartsAsTables  = "<xsl:sequence select="$chartsAsTablesBoolean"/>"  
-      + saveIntermediateDocs  = "<xsl:sequence select="$saveIntermediateDocs"/>"  
+      + saveIntermediateDocs  = "<xsl:sequence select="$saveIntermediateDocs"/>"
+      + tableWidthsProportional = "<xsl:sequence select="$tableWidthsProportional"/>" (<xsl:value-of select="$tableWidthsProportionalBoolean"/>)
       
       Global Variables:
       
