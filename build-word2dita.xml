@@ -235,7 +235,10 @@
 		  <param name="mapNumberFormat" expression="${w2d.map.number.format}"
 		     if="w2d.map.number.format"
 		  />
-      <xmlcatalog refid="dita.catalog"></xmlcatalog>
+		  <param name="tableWidthsProportional" expression="${w2d.table.widths.proportional}"
+		    if="w2d.table.widths.proportional"
+		  />
+		  <xmlcatalog refid="dita.catalog"></xmlcatalog>
 		</xslt>
 		<echo>[INFO] Transform complete</echo>
 	</target>
