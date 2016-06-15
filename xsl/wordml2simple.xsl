@@ -563,7 +563,11 @@
         />
         <fn><xsl:apply-templates
           select="$footnotesDoc/*/w:footnote[@w:id = $targetId]"
-        /></fn>
+        >
+          <xsl:with-param name="relsDoc" as="document-node()?" tunnel="yes"
+            select="document('../word/_rels/footnotes.xml.rels', .)"
+          />
+        </xsl:apply-templates></fn>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -705,6 +709,11 @@
              else string(@w:anchor)
       "  
     />
+    
+    <xsl:variable name="runStyles" as="xs:string*"
+      select="distinct-values(for $r in w:r return local:getRunStyleId($r))"
+    />
+    
     <hyperlink href="{$href}"
       >
       <xsl:for-each select="$runStyleData/@*">
@@ -713,21 +722,23 @@
       <xsl:if test="$doDebug">
         <xsl:message> + [DEBUG] hyperlink: applying templates to first run...</xsl:message>
       </xsl:if>
-      <xsl:apply-templates select="w:r[1]"/>
-      <xsl:if test="count(w:r) > 1">
-        <xsl:if test="$doDebug">
-          <xsl:message> + [DEBUG] hyperlink: More runs, calling handleRunSequence on grouped runs...</xsl:message>
-        </xsl:if>
-        <xsl:for-each-group select="w:r[position() > 1]" group-adjacent="local:getRunStyleId(.)">
-          <xsl:if test="$doDebug">
-            <xsl:message> + [DEBUG] hyperlink: grouping key="<xsl:value-of select="current-grouping-key()"/>"</xsl:message>
-          </xsl:if>
-          <xsl:call-template name="handleRunSequence">
-            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-            <xsl:with-param name="runSequence" select="current-group()"/>
-          </xsl:call-template>
-        </xsl:for-each-group>            
-      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="count($runStyles) = 1">
+          <!-- No need to wrap the contents in ph because the style is all the same -->
+          <xsl:apply-templates select="w:r"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:for-each-group select="w:r" group-adjacent="local:getRunStyleId(.)">
+            <xsl:if test="$doDebug">
+              <xsl:message> + [DEBUG] hyperlink: grouping key="<xsl:value-of select="current-grouping-key()"/>"</xsl:message>
+            </xsl:if>
+            <xsl:call-template name="handleRunSequence">
+              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+              <xsl:with-param name="runSequence" select="current-group()"/>
+            </xsl:call-template>
+          </xsl:for-each-group>            
+        </xsl:otherwise>
+      </xsl:choose>
     </hyperlink>
   </xsl:template>
   
