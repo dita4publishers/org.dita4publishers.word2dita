@@ -1162,7 +1162,9 @@
          to put them in the private use area.
       -->
     <xsl:variable name="nonPrivateCharCode" as="xs:string"
-      select="if (starts-with($charCode, 'F')) then replace($charCode, 'F', '0') else $charCode"
+      select="if (starts-with($charCode, 'F')) 
+                 then concat('0', substring($charCode, 2))
+                 else $charCode"
     />
     <!-- getUnicodeForFont() will return the literal "?" character's code point if
          there is no mapping found for the symbol.
@@ -1484,7 +1486,7 @@
         <xsl:sequence select="'003F'"></xsl:sequence>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:variable name="unicodeCodePoint" as="xs:string">
+        <xsl:variable name="unicodeCodePoint" as="xs:string?">
           <xsl:variable name="codePointMapping" as="element()?"
             select="$fontCharMap/codePointMapping[@origCodePoint = $fontCodePoint]"
           />
