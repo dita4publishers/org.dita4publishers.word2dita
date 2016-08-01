@@ -1500,7 +1500,7 @@
     <xsl:variable name="newTopicName" as="xs:string+">
       <xsl:analyze-string regex="[a-zA-Z:_\.\-0-9]" select="$newTopicName">
         <xsl:matching-substring><xsl:sequence select="."/></xsl:matching-substring>
-        <xsl:non-matching-substring><xsl:sequence select="concat(':', .)"/></xsl:non-matching-substring>
+        <xsl:non-matching-substring><xsl:sequence select="':'"/></xsl:non-matching-substring>
       </xsl:analyze-string>
     </xsl:variable>
     <!-- Assign the new value to $topicName -->
