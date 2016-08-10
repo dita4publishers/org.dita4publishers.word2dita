@@ -564,9 +564,7 @@
         <fn><xsl:apply-templates
           select="$footnotesDoc/*/w:footnote[@w:id = $targetId]"
         >
-          <xsl:with-param name="relsDoc" as="document-node()?" tunnel="yes"
-            select="document('../word/_rels/footnotes.xml.rels', .)"
-          />
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
         </xsl:apply-templates></fn>
       </xsl:otherwise>
     </xsl:choose>
@@ -588,7 +586,9 @@
         />
         <fn><xsl:apply-templates
           select="$endnotesDoc/*/w:endnote[@w:id = $targetId]"
-        /></fn>
+        >
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates></fn>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
