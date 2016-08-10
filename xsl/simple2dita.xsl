@@ -1478,6 +1478,38 @@
     <xsl:variable name="level" as="xs:integer" select="1"/><!-- Topics establish a new level context -->
     <xsl:variable name="nextLevel" as="xs:integer" select="$level + 1"/>
  
+    <!-- topicName will be used for the @id on the generated topic, so we must ensure it complies with
+      the relevant lexical rules -->
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] Original topicName=<xsl:sequence select="$topicName"/></xsl:message>
+    </xsl:if>
+    
+    <!-- Rule #1: @id must start with ':', '_', a-z, or A-Z; if it does not then add on an underscore;
+      desire is to continue to provide uniqueness of @id -->
+    <xsl:variable name="firstCharacterOfTopicName" select="substring($topicName, 1, 1)" as="xs:string" />
+    <xsl:variable name="newTopicName" as="xs:string">
+      <xsl:analyze-string regex="[a-zA-Z:_]" select="$firstCharacterOfTopicName">
+        <xsl:matching-substring><xsl:sequence select="$topicName"/></xsl:matching-substring>
+        <xsl:non-matching-substring><xsl:sequence select="concat(':', $topicName)"/></xsl:non-matching-substring>
+      </xsl:analyze-string>
+    </xsl:variable>
+    <!-- Rule #2: @id must not contain spaces -->
+    <xsl:variable name="newTopicName" select="replace($newTopicName, '[ &#9;&#10;&#13;]', '_')" as="xs:string" />
+    <!-- Rule #3: @id must only contain numbers, letters ':', '_', '-', or '.' -->
+    <xsl:variable name="newTopicName" as="xs:string+">
+      <xsl:analyze-string regex="[a-zA-Z:_\.\-0-9]" select="$newTopicName">
+        <xsl:matching-substring><xsl:sequence select="."/></xsl:matching-substring>
+        <xsl:non-matching-substring><xsl:sequence select="':'"/></xsl:non-matching-substring>
+      </xsl:analyze-string>
+    </xsl:variable>
+    <!-- Assign the new value to $topicName -->
+    <xsl:variable name="topicName" select="string-join($newTopicName, '')" as="xs:string" />
+    
+    <xsl:if test="$doDebug">
+      <xsl:message> + [DEBUG] After fixup to comply with lexical rules for @id, new topicName=<xsl:sequence select="$topicName"/></xsl:message>
+    </xsl:if>
+    
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] constructTopic: topicName=<xsl:sequence select="$topicName"/></xsl:message>
       <xsl:message> + [DEBUG] constructTopic: topic=<xsl:sequence select="local:reportPara(.)"/></xsl:message>
