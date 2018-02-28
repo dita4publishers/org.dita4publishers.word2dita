@@ -109,8 +109,12 @@
            select="$styleElem/w:name/@w:val"/>
          <xsl:sequence select="$styleName"/>        
       </xsl:when>
+      <xsl:when test="$styleId = ('entry')">
+        <!-- There are no default styles for table entries, so no need to say anything. -->
+        <xsl:sequence select="$styleId"/>
+      </xsl:when>
       <xsl:otherwise>
-        <xsl:message> + [WARN] lookupStyleName(): No style definition found for style ID "<xsl:sequence select="$styleId"/>", returning style ID "<xsl:sequence select="$styleId"/>"</xsl:message>
+        <xsl:message> + [WARN] lookupStyleName(): No style definition found for style ID "<xsl:sequence select="$styleId"/>"</xsl:message>
         <xsl:sequence select="$styleId"/>
       </xsl:otherwise>
     </xsl:choose>
