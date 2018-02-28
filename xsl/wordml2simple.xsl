@@ -993,7 +993,17 @@
       select="local:calculateTableCellVerticalAlignment(.)"
     />
     
-    <xsl:if test="not($vmerge and not($vmerge/@w:val))">
+    <!-- A cell starts a vertical merge if <w:vMerge w:val is "restart">
+         A cell continues a vertical merge if w:vMerge is present and specifies
+         either "continue" for @w:val or @w:val is not specified.
+         
+         No w:vMerge in a cell ends the preceding span.
+      -->
+    <xsl:variable name="isMergedCell" as="xs:boolean"
+      select="exists($vmerge) and ($vmerge/@w:val eq continue or empty($vmerge/@w:val))"
+    />
+    <!-- Merged cells are omitted in the result, replaced by explicit @rowspan -->
+    <xsl:if test="not($isMergedCell)">
       <td>
         <xsl:if test="$horizontalAlignment">
           <xsl:attribute name="align" select="$horizontalAlignment"/>
@@ -1007,43 +1017,61 @@
           </xsl:attribute>
         </xsl:for-each>
         
-        <xsl:variable name="rowspan">
+        <xsl:variable name="rowspan" as="xs:integer">
           <xsl:choose>
             <xsl:when test="not($vmerge)">1</xsl:when>
             <xsl:otherwise>
-              <xsl:variable name="myRow" select="ancestor::w:tr[1]"/>
-              <xsl:variable name="myRowInContext"
-                select="$myRow/ancestor::w:tbl[1]/*[count($myRow|descendant-or-self::*)=count(descendant-or-self::*)]"/>
-              <xsl:variable name="belowCurCell"
-                select="$myRowInContext/following-sibling::*//w:tc[count(ancestor::w:tbl)=$tblCount][$curCellPos = local:cellPos(.)]"/>
-              <xsl:variable name="NextRestart"
-                select="($belowCurCell//w:tcPr/w:vMerge[@w:val='restart'])[1]"/>
-              <xsl:variable name="NextRestartInContext"
-                select="$NextRestart/ancestor::w:tbl[1]/*[count($NextRestart|descendant-or-self::*)=count(descendant-or-self::*)]"/>
-              <xsl:variable name="mergesAboveMe"
-                select="count($myRowInContext/preceding-sibling::*[(descendant-or-self::*[name()='w:tc'])[$curCellPos = local:cellPos(.)][descendant-or-self::*[name()='w:vMerge']]])"/>
-              <xsl:variable name="mergesAboveNextRestart"
-                select="count($NextRestartInContext/preceding-sibling::*[(descendant-or-self::*[name()='w:tc'])[$curCellPos = local:cellPos(.)]])"/>
-              <xsl:choose>
-                <xsl:when test="$NextRestart">
-                  <xsl:value-of select="$mergesAboveNextRestart - $mergesAboveMe"
-                  />
-                </xsl:when>
-                <xsl:when test="$vmerge/@w:val">
-                  <xsl:value-of
-                    select="count($belowCurCell[descendant-or-self::*[name()='w:vMerge']]) + 1"
-                  />
-                </xsl:when>
-                <xsl:otherwise>1</xsl:otherwise>
-              </xsl:choose>
+              <!-- w:vMerge must be present and must have a value of "restart", otherwise
+                   this would be a merge continuation cell.
+                -->
+              <xsl:variable name="myRow" as="element()" select="ancestor::w:tr[1]"/>
+              <xsl:variable name="myCol" as="xs:integer" select="count(preceding-sibling::w:tc) + 1"/>
+              <xsl:variable name="followingCells" as="element()*"
+                select="$myRow/following-sibling::w:tr/w:tc[position() = $myCol]"
+              />
+              <xsl:if test="$doDebug">
+                <xsl:message>+ [DEBUG] myRow: <xsl:sequence select="$myRow"/></xsl:message>
+                <xsl:message>+ [DEBUG] myCol: <xsl:sequence select="$myCol"/></xsl:message>
+                <xsl:message>+ [DEBUG] Got <xsl:value-of select="count($followingCells)"/> following cells.</xsl:message>
+              </xsl:if>
+              <xsl:if test="$doDebug and false()">
+                <xsl:message>+ [DEBUG] Following cells:</xsl:message>
+                <xsl:for-each select="$followingCells">
+                  <xsl:message>+ [DEBUG]   <xsl:sequence select="."/></xsl:message>
+                </xsl:for-each>
+              </xsl:if>
+              <xsl:variable name="resetCell" as="element()?"
+                select="($followingCells[w:tcPr/w:vMerge[@w:val eq 'reset'] or empty(w:tcPr/w:vMerge)])[1]"
+              />
+              <xsl:if test="$doDebug">
+                <xsl:message>+ [DEBUG] resetCell: <xsl:sequence select="$resetCell"/></xsl:message>
+              </xsl:if>
+              <xsl:variable name="rowCount" as="xs:integer">
+                <xsl:choose>
+                  <xsl:when test="exists($resetCell)">
+                    <xsl:if test="$doDebug">
+                      <xsl:message>+ [DEBUG]  Have reset cell, counting cells before resetCell</xsl:message>
+                    </xsl:if>
+                    <xsl:sequence select="count($followingCells[. &lt;&lt; $resetCell]) + 1"/>
+                  </xsl:when>
+                  <xsl:otherwise>
+                    <xsl:if test="$doDebug">
+                      <xsl:message>+ [DEBUG]  No reset cell, counting following cells plus 1</xsl:message>
+                    </xsl:if>
+                    <xsl:sequence select="count($followingCells) + 1"/>
+                  </xsl:otherwise>
+                </xsl:choose>
+              </xsl:variable>             
+              <xsl:if test="$doDebug">
+                <xsl:message>+ [DEBUG]  Returning "<xsl:value-of select="$rowCount"/>"</xsl:message>
+              </xsl:if>
+              <xsl:sequence select="$rowCount"/>
             </xsl:otherwise>
           </xsl:choose>
         </xsl:variable>
         
         <xsl:if test="$vmerge">
-          <xsl:attribute name="rowspan">
-            <xsl:value-of select="$rowspan"/>
-          </xsl:attribute>
+          <xsl:attribute name="rowspan" select="$rowspan"/>
         </xsl:if>
         <!--      <xsl:apply-templates select="w:tcPr/*"/>-->
         <xsl:apply-templates select="*[not(self::w:tcPr)]">
