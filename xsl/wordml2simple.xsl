@@ -756,6 +756,12 @@
 
   <xsl:template match="w:tbl">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] **** Starting a table</xsl:message>
+    </xsl:if>
+    <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
+    
     <xsl:variable name="styleData" as="element()">
       <stylemap:paragraphStyle styleId="table"
         structureType="block"
@@ -792,8 +798,15 @@
                   
                   See template for w:tr.
         -->
-      <xsl:apply-templates select="*[not(self::w:tblPr)]"/>
+      
+      <xsl:apply-templates select="*[not(self::w:tblPr)]">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
     </table>
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] **** End of table</xsl:message>
+    </xsl:if>
+    
   </xsl:template>
   
   <xsl:template mode="table-attributes" match="w:tblBorders">
@@ -951,13 +964,23 @@
   
   <xsl:template match="w:tr">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] w:tr: Row <xsl:value-of select="count(preceding-sibling::w:tr) + 1"/></xsl:message>
+    </xsl:if>
+    <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
+    
     <xsl:variable name="isHeaderRow" as="xs:boolean"
       select="boolean(w:trPr/w:tblHeader)"
     />
     <xsl:variable name="tr" as="element()">
      <xsl:element name="tr">
-       <xsl:apply-templates select="w:trPr/*|w:tblPrEx/*"/>
-       <xsl:apply-templates select="*[name()!='w:trPr' and name()!='w:tblPrEx']"/>
+       <xsl:apply-templates select="w:trPr/*|w:tblPrEx/*">
+         <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+       </xsl:apply-templates>
+       <xsl:apply-templates select="*[name()!='w:trPr' and name()!='w:tblPrEx']">
+         <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+       </xsl:apply-templates>
      </xsl:element>
     </xsl:variable>
    <xsl:choose>
@@ -974,6 +997,10 @@
   
   <xsl:template match="w:tc">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG]   w:tc: Row: <xsl:value-of select="count(../preceding-sibling::w:tr) + 1"/>, Cell: <xsl:value-of select="count(preceding-sibling::w:tc) + 1"/></xsl:message>
+    </xsl:if>
     <!-- much of the code in this template comes from the OpenXMLWebViewer's DocX2Html.xslt transform:
             https://openxmlviewer.codeplex.com/
             which is licensed under the Microsoft Public License (Ms-PL)
@@ -1002,6 +1029,9 @@
     <xsl:variable name="isMergedCell" as="xs:boolean"
       select="exists($vmerge) and ($vmerge/@w:val eq continue or empty($vmerge/@w:val))"
     />
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG]     isMergedCell=<xsl:value-of select="$isMergedCell"/></xsl:message>
+    </xsl:if>
     <!-- Merged cells are omitted in the result, replaced by explicit @rowspan -->
     <xsl:if test="not($isMergedCell)">
       <td>
@@ -1012,12 +1042,13 @@
           <xsl:attribute name="valign" select="$verticalAlignment"/>
         </xsl:if>
         <xsl:for-each select="w:tcPr[1]/w:gridSpan[1]/@w:val">
-          <xsl:attribute name="colspan">
-            <xsl:value-of select="."/>
-          </xsl:attribute>
+          <xsl:attribute name="colspan" select="."/>
         </xsl:for-each>
         
         <xsl:variable name="rowspan" as="xs:integer">
+          <xsl:if test="$doDebug">
+            <xsl:message>+ [DEBUG]    Calculating rowspan, $vmerge/@w:val="<xsl:value-of select="$vmerge/@w:val"/>"</xsl:message>
+          </xsl:if>
           <xsl:choose>
             <xsl:when test="not($vmerge)">1</xsl:when>
             <xsl:otherwise>
@@ -1030,40 +1061,48 @@
                 select="$myRow/following-sibling::w:tr/w:tc[position() = $myCol]"
               />
               <xsl:if test="$doDebug">
-                <xsl:message>+ [DEBUG] myRow: <xsl:sequence select="$myRow"/></xsl:message>
-                <xsl:message>+ [DEBUG] myCol: <xsl:sequence select="$myCol"/></xsl:message>
-                <xsl:message>+ [DEBUG] Got <xsl:value-of select="count($followingCells)"/> following cells.</xsl:message>
+                <xsl:message>+ [DEBUG]   $myCol="<xsl:sequence select="$myCol"/>"</xsl:message>
               </xsl:if>
-              <xsl:if test="$doDebug and false()">
-                <xsl:message>+ [DEBUG] Following cells:</xsl:message>
+              <xsl:if test="$doDebug">
+<!--                <xsl:message>+ [DEBUG] myRow: <xsl:sequence select="$myRow"/></xsl:message>
+                <xsl:message>+ [DEBUG] myCol: <xsl:sequence select="$myCol"/></xsl:message>
+-->                <xsl:message>+ [DEBUG] Got <xsl:value-of select="count($followingCells)"/> following cells.</xsl:message>
+              </xsl:if>
+              <xsl:if test="$doDebug">
+                <xsl:message>+ [DEBUG]   Following cells vMerge/@w:val:</xsl:message>
                 <xsl:for-each select="$followingCells">
-                  <xsl:message>+ [DEBUG]   <xsl:sequence select="."/></xsl:message>
+                  <xsl:message>+ [DEBUG]   "<xsl:value-of select=".//w:vMerge/@w:val"/>"</xsl:message>
                 </xsl:for-each>
               </xsl:if>
-              <xsl:variable name="resetCell" as="element()?"
-                select="($followingCells[w:tcPr/w:vMerge[@w:val eq 'reset'] or empty(w:tcPr/w:vMerge)])[1]"
+              <!-- A cell ends merging (is not part of the merge) if it either specifies a value of "restart"
+                   on w:vMerge or does not have a vMerge element at call. If w:vMerge is present by either
+                   has no @w:val attribute or specifies "continue", then it is part of the current merge,
+                   if there is a merge in effect.
+                -->
+              <xsl:variable name="restartCell" as="element()?"
+                select="($followingCells[w:tcPr/w:vMerge[@w:val eq 'restart'] or empty(w:tcPr/w:vMerge)])[1]"
               />
               <xsl:if test="$doDebug">
-                <xsl:message>+ [DEBUG] resetCell: <xsl:sequence select="$resetCell"/></xsl:message>
+                <xsl:message>+ [DEBUG]   restartCell has vMerge: <xsl:value-of select="exists($restartCell//w:vMerge)"/>, vMerge value: "<xsl:sequence select="$restartCell//w:vMerge/@w:val"/>"</xsl:message>
               </xsl:if>
               <xsl:variable name="rowCount" as="xs:integer">
                 <xsl:choose>
-                  <xsl:when test="exists($resetCell)">
+                  <xsl:when test="exists($restartCell)">
                     <xsl:if test="$doDebug">
-                      <xsl:message>+ [DEBUG]  Have reset cell, counting cells before resetCell</xsl:message>
+                      <xsl:message>+ [DEBUG]    Have restart cell, counting cells before restartCell</xsl:message>
                     </xsl:if>
-                    <xsl:sequence select="count($followingCells[. &lt;&lt; $resetCell]) + 1"/>
+                    <xsl:sequence select="count($followingCells[. &lt;&lt; $restartCell]) + 1"/>
                   </xsl:when>
                   <xsl:otherwise>
                     <xsl:if test="$doDebug">
-                      <xsl:message>+ [DEBUG]  No reset cell, counting following cells plus 1</xsl:message>
+                      <xsl:message>+ [DEBUG]    No restart cell, counting following cells plus 1</xsl:message>
                     </xsl:if>
                     <xsl:sequence select="count($followingCells) + 1"/>
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:variable>             
               <xsl:if test="$doDebug">
-                <xsl:message>+ [DEBUG]  Returning "<xsl:value-of select="$rowCount"/>"</xsl:message>
+                <xsl:message>+ [DEBUG]    Returning "<xsl:value-of select="$rowCount"/>"</xsl:message>
               </xsl:if>
               <xsl:sequence select="$rowCount"/>
             </xsl:otherwise>
