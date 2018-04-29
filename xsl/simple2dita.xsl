@@ -225,10 +225,14 @@
     
     
     <rsiwp:result-document href="{$resultUrl}"
-      doctype-public="{$format/@doctype-public}"
-      doctype-system="{$format/@doctype-system}"
       indent="yes"
       >
+      <xsl:if test="$format/@doctype-public">
+        <xsl:attribute name="doctype-public" select="$format/@doctype-public"/>
+      </xsl:if>
+      <xsl:if test="$format/@doctype-system">
+        <xsl:attribute name="doctype-system" select="$format/@doctype-system"/>
+      </xsl:if>      
       <xsl:message> + [INFO] Applying final-fixup mode to <xsl:sequence select="$resultUrl"/>...</xsl:message>
       <xsl:apply-templates select="$mapElement" mode="final-fixup">
         <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
@@ -550,10 +554,13 @@
   <xsl:template mode="generate-result-docs" match="rsiwp:result-document" priority="10">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:message> + [INFO] Generating result document "<xsl:sequence select="string(@href)"/>..."</xsl:message>
-    <xsl:result-document href="{@href}" 
-      doctype-public="{@doctype-public}"
-      doctype-system="{@doctype-system}">
-      <xsl:apply-templates select="./*" mode="generate-result-docs"/>
+    <xsl:result-document href="{@href}" >
+      <xsl:if test="@doctype-public">
+        <xsl:attribute name="doctype-public" select="@doctype-public"/>
+      </xsl:if>
+      <xsl:if test="@doctype-system">
+        <xsl:attribute name="doctype-system" select="@doctype-system"/>
+      </xsl:if>      <xsl:apply-templates select="./*" mode="generate-result-docs"/>
     </xsl:result-document>
   </xsl:template>
   
@@ -1388,10 +1395,13 @@
         />
         <!-- Now do ID fixup on the result document: -->
         <xsl:message> + [INFO] Applying final-fixup mode to <xsl:sequence select="$topicUrl"/>...</xsl:message>
-        <rsiwp:result-document href="{$topicUrl}"
-            doctype-public="{$format/@doctype-public}"
-            doctype-system="{$format/@doctype-system}"
-            >
+        <rsiwp:result-document href="{$topicUrl}">
+          <xsl:if test="$format/@doctype-public">
+            <xsl:attribute name="doctype-public" select="$format/@doctype-public"/>
+          </xsl:if>
+          <xsl:if test="$format/@doctype-system">
+            <xsl:attribute name="doctype-system" select="$format/@doctype-system"/>
+          </xsl:if>
           <xsl:apply-templates select="$topicElement" mode="final-fixup">
             <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
           </xsl:apply-templates>
