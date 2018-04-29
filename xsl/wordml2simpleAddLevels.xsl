@@ -236,7 +236,7 @@
         <rsiwp:mapref>
           <xsl:sequence select="@styleName, @styleId"/>
           <xsl:for-each select="stylemap:mapProperties">
-            <xsl:sequence select="@maprefType"/>
+            <xsl:sequence select="@maprefType, @maprefFormat"/>
           </xsl:for-each>          
           <xsl:sequence select="$map"/>
         </rsiwp:mapref>

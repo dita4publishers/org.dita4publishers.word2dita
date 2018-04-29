@@ -266,6 +266,10 @@
       "
     />
     
+    <xsl:variable name="maptype" as="xs:string"
+      select="if (@mapType) then @mapType else 'map'"
+    />
+    
     <xsl:element name="{@mapType}">
       <xsl:sequence select="$schemaAtts"/>
       <xsl:call-template name="generateXtrcAtt"/>  
