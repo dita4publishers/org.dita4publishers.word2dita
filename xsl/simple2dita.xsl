@@ -553,15 +553,30 @@
   
   <xsl:template mode="generate-result-docs" match="rsiwp:result-document" priority="10">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
     <xsl:message> + [INFO] Generating result document "<xsl:sequence select="string(@href)"/>..."</xsl:message>
-    <xsl:result-document href="{@href}" >
-      <xsl:if test="@doctype-public">
-        <xsl:attribute name="doctype-public" select="@doctype-public"/>
-      </xsl:if>
-      <xsl:if test="@doctype-system">
-        <xsl:attribute name="doctype-system" select="@doctype-system"/>
-      </xsl:if>      <xsl:apply-templates select="./*" mode="generate-result-docs"/>
-    </xsl:result-document>
+    <xsl:choose>
+      <xsl:when test="exists(@doctype-system) and exists(@doctype-public)">
+        <xsl:result-document href="{@href}" doctype-public="{@doctype-public}" doctype-system="{@doctype-system}">
+          <xsl:apply-templates select="./*" mode="generate-result-docs"/>
+        </xsl:result-document>
+      </xsl:when>
+      <xsl:when test="exists(@doctype-system)">
+        <xsl:result-document href="{@href}" doctype-system="{@doctype-system}">
+          <xsl:apply-templates select="./*" mode="generate-result-docs"/>
+        </xsl:result-document>
+      </xsl:when>
+      <xsl:when test="exists(@doctype-public)">
+        <xsl:result-document href="{@href}" doctype-public="{@doctype-public}">
+          <xsl:apply-templates select="./*" mode="generate-result-docs"/>
+        </xsl:result-document>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:result-document href="{@href}">
+          <xsl:apply-templates select="./*" mode="generate-result-docs"/>
+        </xsl:result-document>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
   
   <xsl:template mode="generate-result-docs" match="*" priority="5">
