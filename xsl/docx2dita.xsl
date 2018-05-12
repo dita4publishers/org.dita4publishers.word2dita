@@ -361,6 +361,11 @@ version="2.0">
     indent="yes"
     use-character-maps="symbols"
   />
+  <xsl:output 
+    method="xml"
+    indent="no"
+    use-character-maps="symbols"
+  />
   <xsl:include
     href="office-open-utils.xsl"/>
   <xsl:include
