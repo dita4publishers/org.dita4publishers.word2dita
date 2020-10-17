@@ -16,7 +16,7 @@
   xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"
   xmlns:rels="http://schemas.openxmlformats.org/package/2006/relationships"
   xmlns:c="http://schemas.openxmlformats.org/drawingml/2006/chart"
-  
+  xmlns:map="http://www.w3.org/2005/xpath-functions/map"
   xmlns:local="urn:local-functions"
   
   xmlns:saxon="http://saxon.sf.net/"
@@ -25,7 +25,7 @@
   xmlns:relpath="http://dita2indesign/functions/relpath"
   xmlns="http://reallysi.com/namespaces/generic-wordprocessing-xml"
   
-  exclude-result-prefixes="a c pic xs mv mo ve o r m v w10 w wne wp local relpath saxon"
+  exclude-result-prefixes="a c pic xs mv mo ve o r m v w10 w wne wp local relpath saxon map"
   version="3.0">
   
   <!--==========================================
@@ -42,6 +42,63 @@
       @since Issue 53
       
       =========================================== -->
+
+  <!--
+    Handle REF fields:  <w:instrText xml:space="preserve"> REF _Ref53511179 \h </w:instrText>
+    
+    NOTE: The OOXML reference says that the "REF" keyword can be omitted but I'm going to assume
+    that newer versions of Word never do that. The default handler will report an omitted REF
+    field since it will be unrecognized.
+    
+    See 17.16.5.51 REF in OOXML Reference
+    -->
+  <xsl:template mode="handleComplexFieldType" match=".[lower-case(.) eq 'ref']">
+    <xsl:param name="runSequence" as="element()*" tunnel="yes" select="()"/>
+    <xsl:variable name="fieldType" as="xs:string" select="."/>
+
+    <xsl:variable name="instruction" as="xs:string"
+      select="normalize-space($runSequence[w:instrText][1])"
+    />
+    <xsl:variable name="separator" as="element()?" select="$runSequence[w:fldChar[@w:fldCharType eq 'separate']]"/>
+    <xsl:variable name="end" as="element()?" select="$runSequence[w:fldChar[@w:fldCharType eq 'end']]"/>
+    
+    <xsl:variable name="targetID" as="xs:string" select="tokenize($instruction)[2]"/>
+    <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: Flags: /{substring-after($instruction, $targetID) => normalize-space()}/</xsl:message>
+    <xsl:variable name="flags" as="map(*)">
+      <xsl:variable name="flagTokens" as="xs:string*" select="substring-after($instruction, $targetID) => normalize-space() => tokenize('\\')"/>
+      <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: flagTokens: '{$flagTokens => string-join("', '")}'</xsl:message>
+      <xsl:map>
+        <xsl:for-each select="$flagTokens[. ne '']">
+          <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: token[{position()}]="{.}"</xsl:message>
+          <xsl:variable name="tokens" as="xs:string*" select="tokenize(., '\s+')"/>
+          <xsl:variable name="flagName" as="xs:string?" select="$tokens[1]"/>
+          <xsl:map-entry key="$flagName"><xsl:value-of select="$tokens[position() gt 1] => string-join(' ')"/></xsl:map-entry>
+        </xsl:for-each>
+      </xsl:map>
+    </xsl:variable>
+    
+    <xsl:variable name="href" as="xs:string" select="'#href-value'"/>
+    
+    <!-- FIXME: Handle more flags as needed -->
+    <xsl:choose>
+      <xsl:when test="map:contains($flags, 'h')">
+        <hyperlink href="{$href}"
+          styleId="Hyperlink"
+          structureType="xref"
+          tagName="xref"
+          >
+        </hyperlink>       
+      </xsl:when>
+      <xsl:otherwise>
+        <!-- Not a hyperlink. Not sure what to do. -->
+        <run tagName="ph">{complex field "REF" that is not a hyperlink. Original instruction: <xsl:value-of select="$instruction"/>}</run>
+      </xsl:otherwise>
+    </xsl:choose>
+    <!-- The content of the reference is generated but it's useful to capture what was there: -->
+    <xsl:if test="exists($separator)">
+      <run tagName="draft-comment"> Original resolved ref content:&#x0a;<xsl:value-of select="$runSequence[. &gt;&gt; $separator][. &lt;&lt; $end] => string-join('') => normalize-space()"/></run>
+    </xsl:if>
+  </xsl:template>
   
   <!--
     Default handler for unrecognized field types.

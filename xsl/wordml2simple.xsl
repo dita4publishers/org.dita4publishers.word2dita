@@ -23,9 +23,10 @@
       xmlns:rsiwp="http://reallysi.com/namespaces/generic-wordprocessing-xml"
       xmlns:stylemap="urn:public:dita4publishers.org:namespaces:word2dita:style2tagmap"
       xmlns:relpath="http://dita2indesign/functions/relpath"
+      xmlns:map="http://www.w3.org/2005/xpath-functions/map"
       xmlns="http://reallysi.com/namespaces/generic-wordprocessing-xml"
       
-      exclude-result-prefixes="a c pic xs mv mo ve o r m v w10 w wne wp local relpath saxon"
+      exclude-result-prefixes="a c pic xs mv mo ve o r m v w10 w wne wp local relpath saxon map"
       version="3.0">
   
   <!--==========================================
