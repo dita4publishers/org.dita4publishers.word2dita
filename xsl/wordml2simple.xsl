@@ -50,6 +50,8 @@
   <xsl:import href="../../org.dita4publishers.common.xslt/xsl/lib/relpath_util.xsl"/>
  -->
   
+  <xsl:import href="modeHandleComplexField.xsl"/>
+  
   <xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
     <xd:desc>
       <xd:p>The absolute URL of the directory that contains the media objects extracted
@@ -361,6 +363,12 @@
             <xsl:with-param name="runSequence" select="current-group()"/>
           </xsl:call-template>
         </xsl:when>
+        <xsl:when test="current-grouping-key() eq 'complexField'">
+          <!-- Issue 53: Added handling of complex fields -->
+          <xsl:call-template name="handleComplexField">
+            <xsl:with-param name="runSequence" select="current-group()"/>
+          </xsl:call-template>
+        </xsl:when>
         <xsl:when test="current-group()[1][self::w:r]">
           <!-- Issue 52: Runs should be grouped by style ID based on the value of getRunType. -->
           <xsl:call-template name="handleRunSequence">
@@ -387,6 +395,39 @@
     </xsl:for-each-group>
     
   </xsl:template>  
+  
+  <!--
+    Handle the runs that make up a complex field. See 17.16 Fields and Hyperlinks in the OOXML Reference 
+    @param runSequence The runs that make up the complex field. Should include both the begin and end field marker runs.
+    @since Issue 53
+    -->
+  <xsl:template name="handleComplexField">
+    <xsl:param name="runSequence" as="element()*"/>
+    
+    <xsl:choose>
+      <xsl:when test="exists($runSequence[w:instrText])">
+        <xsl:variable name="instructionText" as="xs:string?"
+          select="normalize-space($runSequence[w:instrText]/w:instrText)"
+        />
+        <xsl:variable name="fieldType" as="xs:string" 
+          select="tokenize($instructionText, '\s+')[1]"
+        />
+        <xsl:apply-templates select="$fieldType" mode="handleComplexFieldType">
+          <xsl:with-param name="runSequence" as="element()+" tunnel="yes" select="$runSequence"/>
+        </xsl:apply-templates>
+        
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:message>+ [WARN] handleComplexField: Did not find expected w:instrText run within the complex field run sequence. Runs:</xsl:message>
+        <xsl:for-each select="$runSequence">
+          <xsl:message>+ [WARN]  <xsl:sequence select="."/></xsl:message>
+        </xsl:for-each>
+        <xsl:message>+ [WARN] handleComplexField: ----------</xsl:message>
+        <xsl:comment> Unhandleable complex field run group. See log for details. </xsl:comment>
+      </xsl:otherwise>
+    </xsl:choose>
+    
+  </xsl:template>
     
   <xsl:template match="m:oMathPara">
     <!-- Not 100% certain whether m:oMathPara or m:oMath should create the outer mathml element
@@ -1666,12 +1707,23 @@
     -->
   <xsl:function name="local:getRunGroupingKey" as="xs:string">
     <xsl:param name="context" as="element()"/>
+    <xsl:variable name="precedingFieldStart" as="element(w:r)?"
+      select="$context/preceding-sibling::w:r[w:fldChar[@w:fldCharType eq 'begin']][1]"
+    />
+    <xsl:variable name="precedingFieldEnd" as="element(w:r)?"
+      select="$context/preceding-sibling::w:r[. &gt;&gt; $precedingFieldStart][w:fldChar[@w:fldCharType eq 'end']][1]"
+    />
+    <xsl:variable name="isInComplexField" as="xs:boolean" select="exists($precedingFieldStart) and empty($precedingFieldEnd)"/>
     <xsl:variable name="result" as="xs:string"
       select="
       if (exists($context/w:endnoteReference))
       then 'endnoteReference'
       else if (exists($context/w:footnoteReference))
       then 'footnoteReference'
+      else if (exists($context/w:fldChar | $context/w:instrText) or
+               $isInComplexField
+              )
+      then 'complexField'
       else if ($context/self::w:r)
       then concat(local-name($context), local:getRunStyleId($context))
       else local-name($context)
