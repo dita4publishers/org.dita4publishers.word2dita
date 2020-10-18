@@ -77,17 +77,18 @@
       </xsl:map>
     </xsl:variable>
     
-    <xsl:variable name="href" as="xs:string" select="'#href-value'"/>
     
     <!-- FIXME: Handle more flags as needed -->
     <xsl:choose>
       <xsl:when test="map:contains($flags, 'h')">
-        <hyperlink href="{$href}"
+        <!-- NOTE: The simple2dita processing will treat this as link to a bookmark because the href value
+                   is not an absolute URL.
+          -->
+        <hyperlink href="{$targetID}"
           styleId="Hyperlink"
           structureType="xref"
           tagName="xref"
-          >
-        </hyperlink>       
+        />
       </xsl:when>
       <xsl:otherwise>
         <!-- Not a hyperlink. Not sure what to do. -->
