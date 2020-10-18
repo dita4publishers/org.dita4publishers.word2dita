@@ -276,7 +276,7 @@
            will be the tagname for the topic title, so we want
            that on the paragraph itself.
         -->
-    <p style="{$styleId}" wordLocation="{saxon:path()}">
+    <p style="{$styleId}" wordLocation="{path()}">
       <xsl:sequence select="local:getTagnameFromNestedProperties($styleData)"/>
       <xsl:sequence select="$styleData/@*"/>
       <xsl:apply-templates select="$styleData/stylemap:additionalAttributes"/>

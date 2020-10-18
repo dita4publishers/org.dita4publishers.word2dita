@@ -26,7 +26,7 @@
       xmlns="http://reallysi.com/namespaces/generic-wordprocessing-xml"
       
       exclude-result-prefixes="a pic xs mv mo ve o r m v w10 w wne wp local relpath saxon"
-      version="2.0">
+      version="3.0">
   <!-- MathType fixup. This is mode "simpleWpDoc-MathTypeFixup -->
   
   <xsl:template match="/" mode="simpleWpDoc-MathTypeFixup">
@@ -74,7 +74,7 @@
       '&lt;/root>')"
     />
     <xsl:variable name="result" as="node()*"
-      select="saxon:parse($rawData)"
+      select="parse-xml($rawData)"
     />
     <xsl:sequence select="$result"/>
   </xsl:function>
