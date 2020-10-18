@@ -26,13 +26,13 @@
       xmlns="http://reallysi.com/namespaces/generic-wordprocessing-xml"
       
       exclude-result-prefixes="a c pic xs mv mo ve o r m v w10 w wne wp local relpath saxon"
-      version="2.0">
+      version="3.0">
   
   <!--==========================================
       MS Office 2007 Office Open XML to generic
       XML transform.
       
-      Copyright (c) 2009, 2016 DITA For Publishers
+      Copyright (c) 2009, 2020 DITA For Publishers
       
       This transform is a generic transform that produces a simplified
       form of generic XML from Office Open XML.
@@ -41,6 +41,9 @@
       package.
       
       Originally developed by Really Strategies, Inc.
+      
+      Issue 52: Refactored paragraph and run handling to correct logic bug that could drop runs
+                between footnote references. Set XSLT version to 3.0.
       
       =========================================== -->
 <!-- 
@@ -294,67 +297,96 @@
       <xsl:if test="$doDebug">        
         <xsl:message> + [DEBUG] handlePara: p="<xsl:sequence select="substring(normalize-space(.), 1, 40)"/>"</xsl:message>
       </xsl:if>
-      <!-- FIXME: This code is not doing anything specific with smartTag elements, just
-                  processing their children. Doing something intelligent with smartTags
-                  would require additional logic.
-                  
-                  WEK: Not sure why I've used this for-each-group logic, but I think it's because Word
-                  doesn't require the elements specific to a given kind of thing to occur in sequence.
-                  
-                  But it seems like it ought to be possible to handle these elements using normal
-                  apply-templates.
-        -->
-      <xsl:for-each-group 
-        select="*" 
-        group-adjacent="name(.)">
-        <xsl:if test="$doDebug">
-          <xsl:message> + [DEBUG] handlePara: current-group()[1]=<xsl:sequence select="current-group()[1]"/></xsl:message>
-        </xsl:if>
-        <xsl:choose>
-          <xsl:when test="current-group()[1][self::w:r/w:endnoteReference]">
-            <xsl:if test="$doDebug">
-              <xsl:message> + [DEBUG] handlePara: handling w:r/w:endnoteReference</xsl:message>
-            </xsl:if>
-            <xsl:call-template name="handleEndNoteRef">
-                <xsl:with-param name="runSequence" select="current-group()"/>
-            </xsl:call-template>
-          </xsl:when>
-          <xsl:when test="current-group()[1][self::w:r[w:footnoteReference]]">
-            <xsl:if test="$doDebug">
-              <xsl:message> + [DEBUG] handlePara: handling w:r/w:footnoteReference</xsl:message>
-            </xsl:if>
-            <xsl:call-template name="handleFootNoteRef">
-                <xsl:with-param name="runSequence" select="current-group()"/>
-            </xsl:call-template>
-          </xsl:when>
-          <xsl:when test="current-group()[1][self::w:r]">
-            <xsl:for-each-group select="current-group()" group-adjacent="local:getRunStyleId(.)">
-              <xsl:call-template name="handleRunSequence">
-                <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-                <xsl:with-param name="runSequence" select="current-group()"/>
-              </xsl:call-template>
-            </xsl:for-each-group>            
-          </xsl:when>
-          <xsl:when test="current-group()[1][self::w:smartTag]">
-            <xsl:if test="$doDebug">
-              <xsl:message> + [DEBUG] handlePara: *** got a w:smartTag. current-group=<xsl:sequence select="current-group()"/></xsl:message>
-            </xsl:if>     
-            <xsl:for-each select="current-group()">
-              <xsl:call-template name="handleRunSequence">
-                <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-                <xsl:with-param name="runSequence" select="w:r"/>
-              </xsl:call-template>              
-            </xsl:for-each>
-          </xsl:when>
-          <xsl:otherwise>
-            <xsl:apply-templates select="current-group()"/><!-- default, just handle normally -->
-          </xsl:otherwise>
-        </xsl:choose>
-        
-      </xsl:for-each-group>
+      <!-- Issue 52: Refactored to -->
+      <xsl:call-template name="handleRunLevelElements">
+        <xsl:with-param name="elements" as="element()*" select="*"/>
+      </xsl:call-template>      
     </p>
-    
   </xsl:template>
+  
+  
+  
+  <!-- 
+    
+    Process sets of run-level elements (elements within w:p or similar) 
+    @param doDebug
+    @param elements The run-level elements to process. Defaults to elements in current context
+    @since Issue 52
+  -->
+  <xsl:template name="handleRunLevelElements">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:param name="elements" as="element()*" select="*"/>
+    <!-- 
+              This code is designed to handle sequences of runs as a unit, as well as other things that
+              can occur in runs, with the goal of producing the smallest number of run elements in
+              the simple WP XMl.
+              
+              The alternative would be to just handle each run individually using normal apply-templates
+              processing.
+       
+        Issue 52: Replaced group-adjacent value of name(.) to local:getRunType(), which distinguishes runs by
+                  both what they contain and, for regular runs, their style IDs. This resolves the issue
+                  with fnref within superscripted runs and also fixes a logic bug where sequences of runs
+                  where the first did not contain a footnote reference might have resulted in dropped fnrefs
+                  (although I don't think that actually happened).
+                  
+                  Footnote references within runs that are handled through handleRunSequence will get processed,
+                  but the issue is that footnote references within styled runs will be styled for that run
+                  (i.e., b, i, sup, sub) and we don't want sup styling on footnote references.
+                  
+                  As far as I can tell from looking at sample DOCX files, footnote and endnote references are always
+                  in separate runs that have no text, so it should be safe to treat them in isolation so that the
+                  fn element is never within any styling.
+      -->
+    <xsl:for-each-group 
+      select="$elements" 
+      group-adjacent="local:getRunGroupingKey(.)">
+      <xsl:if test="$doDebug">
+        <xsl:message> + [DEBUG] handleRunLevelElements: current-group()[1]=<xsl:sequence select="current-group()[1]"/></xsl:message>
+      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="current-group()[1][self::w:r/w:endnoteReference]">
+          <xsl:if test="$doDebug">
+            <xsl:message> + [DEBUG] handleRunLevelElements: handling w:r/w:endnoteReference</xsl:message>
+          </xsl:if>
+          <xsl:call-template name="handleEndNoteRef">
+            <xsl:with-param name="runSequence" select="current-group()"/>
+          </xsl:call-template>
+        </xsl:when>
+        <xsl:when test="current-group()[1][self::w:r[w:footnoteReference]]">
+          <xsl:if test="$doDebug">
+            <xsl:message> + [DEBUG] handleRunLevelElements: handling w:r/w:footnoteReference</xsl:message>
+          </xsl:if>
+          <xsl:call-template name="handleFootNoteRef">
+            <xsl:with-param name="runSequence" select="current-group()"/>
+          </xsl:call-template>
+        </xsl:when>
+        <xsl:when test="current-group()[1][self::w:r]">
+          <!-- Issue 52: Runs should be grouped by style ID based on the value of getRunType. -->
+          <xsl:call-template name="handleRunSequence">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+            <xsl:with-param name="runSequence" select="current-group()"/>
+          </xsl:call-template>           
+        </xsl:when>
+        <xsl:when test="current-group()[1][self::w:smartTag]">
+          <xsl:if test="$doDebug">
+            <xsl:message> + [DEBUG] handleRunLevelElements: *** got a w:smartTag. current-group=<xsl:sequence select="current-group()"/></xsl:message>
+          </xsl:if>     
+          <xsl:for-each select="current-group()">
+            <xsl:call-template name="handleRunSequence">
+              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+              <xsl:with-param name="runSequence" select="w:r"/>
+            </xsl:call-template>              
+          </xsl:for-each>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:apply-templates select="current-group()"/><!-- default, just handle normally -->
+        </xsl:otherwise>
+      </xsl:choose>
+      
+    </xsl:for-each-group>
+    
+  </xsl:template>  
     
   <xsl:template match="m:oMathPara">
     <!-- Not 100% certain whether m:oMathPara or m:oMath should create the outer mathml element
@@ -507,22 +539,42 @@
     
   </xsl:template>
   
+  <!-- Issue 52: Correct logic bug that drops text between footnote refs in the same paragraphs -->
   <xsl:template name="handleFootNoteRef">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="runSequence" as="element()*"/>
-    <!-- Get the footnote ID, try to find it in the footnotes.xml document,
-         and generate a footnote element.
-    -->
-    <xsl:apply-templates select="$runSequence//w:footnoteReference"/>
+    <xsl:for-each-group select="$runSequence" group-adjacent="exists(.//w:footnoteReference)">
+      <xsl:choose>
+        <xsl:when test="current-group()[1][.//w:footnoteReference]">
+          <xsl:apply-templates select="current-group()//w:footnoteReference"/>          
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="handleRunLevelElements">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+            <xsl:with-param name="elements" as="element()*" select="current-group()"/>
+          </xsl:call-template>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:for-each-group>
   </xsl:template>
   
+  <!-- Issue 52: Correct logic bug that drops text between footnote refs in the same paragraphs -->
   <xsl:template name="handleEndNoteRef">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="runSequence" as="element()*"/>
-    <!-- Get the footnote ID, try to find it in the footnotes.xml document,
-         and generate a footnote element.
-    -->
-    <xsl:apply-templates select="$runSequence//w:endnoteReference"/>
+    <xsl:for-each-group select="$runSequence" group-adjacent="exists(.//w:endnoteReference)">
+      <xsl:choose>
+        <xsl:when test="current-group()[1][.//w:endnoteReference]">
+          <xsl:apply-templates select="current-group()//w:endnoteReference"/>          
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:call-template name="handleRunLevelElements">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+            <xsl:with-param name="elements" as="element()*" select="current-group()"/>
+          </xsl:call-template>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:for-each-group>
   </xsl:template>
   
   <!-- Suppress runs that contain w:footnoteRef.
@@ -1604,5 +1656,27 @@
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:message> - [WARNING] wordml2simple: default mode: Unhandled element <xsl:sequence select="name(..)"/>/<xsl:sequence select="name(.)"/></xsl:message>
   </xsl:template>
-  
+
+  <!-- Generates a grouping key that reflects the "type" of run, in particular, whether or not a run has end or footnote references
+       in it or is just a generic run. For elements that are not w:r, uses the element's local name, which should be distinguishing
+       (i.e., smartTag or whatever).
+       @param context Run element to get the type of
+       @return The type value, i.e., "w:run, "run-with-endnote", "run-with-footnote", etc. 
+       @since Issue 52
+    -->
+  <xsl:function name="local:getRunGroupingKey" as="xs:string">
+    <xsl:param name="context" as="element()"/>
+    <xsl:variable name="result" as="xs:string"
+      select="
+      if (exists($context/w:endnoteReference))
+      then 'endnoteReference'
+      else if (exists($context/w:footnoteReference))
+      then 'footnoteReference'
+      else if ($context/self::w:r)
+      then concat(local-name($context), local:getRunStyleId($context))
+      else local-name($context)
+      "
+    />
+    <xsl:sequence select="$result"/>
+  </xsl:function>
 </xsl:stylesheet>
