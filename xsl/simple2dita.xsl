@@ -2182,27 +2182,20 @@
       <!-- Not all Word hyperlinks become DITA hyperlinks: -->
       <xsl:if test="string(@structureType) = 'xref'">
         <xsl:variable name="origHref" select="@href" as="xs:string"/>
-        <xsl:variable name="href" as="xs:string">
-          <xsl:choose>
-            <xsl:when test="matches($origHref, '^\w+:')">
-              <!-- URI of some sort, assume external scope -->
-              <xsl:sequence select="$origHref"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <xsl:sequence select="local:bookmarkRefToDitaRef(., $simpleWpDoc)"/>
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:variable>
-        <xsl:variable name="scope" as="xs:string?">
-          <xsl:choose>
-            <xsl:when test="matches($origHref, '^\w+:')">
-              <xsl:sequence select="'external'"/>
-            </xsl:when>
-            <xsl:otherwise>
-              <!-- scope is defaulted  -->
-            </xsl:otherwise>
-          </xsl:choose>
-        </xsl:variable>
+        <xsl:variable name="href" as="xs:string"
+          select="
+          if (matches($origHref, '^\w+:'))
+          then $origHref
+          else local:bookmarkRefToDitaRef(., $simpleWpDoc)
+          "
+        />
+        <xsl:variable name="scope" as="xs:string?"
+          select="
+          if (matches($origHref, '^\w+:'))
+          then 'external'
+          else ()
+          "
+        />
         <xsl:variable name="format" as="xs:string?">
           <xsl:choose>
             <xsl:when test="matches($origHref, '^\w+:')">
@@ -2218,14 +2211,12 @@
                        is no extension assum "html" otherwise use the 
                        extension of the resource.
                     -->
-                  <xsl:choose>
-                    <xsl:when test="$extension = ''">
-                      <xsl:sequence select="'html'"/>
-                    </xsl:when>
-                    <xsl:otherwise>
-                      <xsl:sequence select="$extension"/>
-                    </xsl:otherwise>
-                  </xsl:choose>
+                  <xsl:sequence select="
+                    if ($extension eq '')
+                    then 'html'
+                    else $extension
+                    "
+                  />
                 </xsl:when>
                 <xsl:otherwise>
                   <!-- Use the URI scheme as the format, since that will usually be
