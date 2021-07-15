@@ -52,12 +52,56 @@
     
   <xsl:function name="local:getRunStyleId" as="xs:string">
     <xsl:param name="context" as="element()"/>
-    <xsl:sequence select="
-      if ($context/w:rPr/w:rStyle) 
-          then string($context/w:rPr/w:rStyle/@w:val)
-          else ''
-    "/>
+    <xsl:variable name="baseStyle" as="xs:string?">
+      <xsl:apply-templates select="$context" mode="local:getRunStyleId"/>
+    </xsl:variable>
+    <xsl:sequence select="($baseStyle, '')[1]"/>
   </xsl:function>
+  
+  <xsl:template mode="local:getRunStyleId" match="w:rPr/w:rStyle" as="xs:string">
+      <xsl:sequence select="(string(@w:val), '')[1]"/>
+  </xsl:template>
+
+  <xsl:template mode="local:getRunStyleId" match="w:rPr[empty(w:rStyle)]" as="xs:string">
+    <xsl:variable name="styleTokens" as="xs:string*">
+      <!-- Ensure that we generate style names in a consistent order -->
+      <xsl:apply-templates mode="local:getRunStyleId-styleTokens" 
+        select="w:b, w:i, w:u, w:vertAlign, w:strike, w:* except (w:b, w:i, w:u, w:vertAlign, w:strike)"/>
+    </xsl:variable>
+    <xsl:sequence select="string-join($styleTokens, '')"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getRunStyleId-styleTokens" match="w:b" as="xs:string">
+    <xsl:sequence select="'Bold'"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getRunStyleId-styleTokens" match="w:i" as="xs:string">
+    <xsl:sequence select="'Italic'"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getRunStyleId-styleTokens" match="w:strike" as="xs:string">
+    <xsl:sequence select="'LineThrough'"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getRunStyleId-styleTokens" match="w:u" as="xs:string">
+    <xsl:sequence select="'Underline'"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getRunStyleId-styleTokens" match="w:vertAlign[@w:val='subscript']" as="xs:string">
+    <xsl:sequence select="'Subscript'"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getRunStyleId-styleTokens" match="w:vertAlign[@w:val='superscript']" as="xs:string">
+    <xsl:sequence select="'Superscript'"/>
+  </xsl:template>
+  
+  <xsl:template mode="local:getRunStyleId" match="text()" as="xs:string?" priority="-1">
+    <!-- Don't copy text in this mode -->
+  </xsl:template>
+  
+  <xsl:template mode="local:getRunStyleId" match="*" as="xs:string?" priority="-1">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
   
   <xsl:function name="ooutil:getSharedStringsDoc" as="document-node()?">
     <xsl:param name="context" as="element()"/>    
