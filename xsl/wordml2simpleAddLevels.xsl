@@ -26,7 +26,7 @@
       xmlns="http://reallysi.com/namespaces/generic-wordprocessing-xml"
       
       exclude-result-prefixes="a pic xs mv mo ve o r m v w10 w wne wp local relpath saxon"
-  version="2.0">
+  version="3.0">
   <!-- This processes the flat paragraph structure into levels that reflect
        the map and topic structure.
        

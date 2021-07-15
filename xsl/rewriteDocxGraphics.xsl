@@ -3,7 +3,7 @@
                 xmlns:xs="http://www.w3.org/2001/XMLSchema"
                 xmlns:docxrel="http://schemas.openxmlformats.org/package/2006/relationships"
                 exclude-result-prefixes="xs"
-                version="2.0">
+                version="3.0">
   <xd:doc
     xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl"
     scope="stylesheet">

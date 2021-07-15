@@ -8,7 +8,7 @@
   xmlns:stylemap="urn:public:dita4publishers.org:namespaces:word2dita:style2tagmap"
   xmlns:relpath="http://dita2indesign/functions/relpath"
   exclude-result-prefixes="xs rsiwp stylemap local relpath xsi"
-version="2.0">
+version="3.0">
 
   <xsl:import href="../../org.dita-community.common.xslt/xsl/relpath_util.xsl"/>
   
@@ -388,6 +388,9 @@ version="2.0">
     href="resultdocs-xref-fixup.xsl"/>
   <xsl:include 
     href="omml2mml.xsl"/>
+  <xsl:include
+    href="final-fixup.xsl"
+  />
   
   <xsl:template
     match="/"

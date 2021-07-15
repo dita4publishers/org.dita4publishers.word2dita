@@ -9,7 +9,7 @@
       xmlns:m="http://www.w3.org/1998/Math/MathML"
       
       exclude-result-prefixes="xs rsiwp stylemap local relpath xsi"
-  version="2.0">
+  version="3.0">
   <!-- =========================================
        Word to DITA Framework
        

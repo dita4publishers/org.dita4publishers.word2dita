@@ -9,7 +9,7 @@
       xmlns:m="http://www.w3.org/1998/Math/MathML"
       
       exclude-result-prefixes="xs rsiwp stylemap local relpath xsi"
-      version="2.0">
+      version="3.0">
 
   <!--==========================================
     Simple Word Processing Markup to DITA generic transformation
@@ -1450,47 +1450,6 @@
 
   </xsl:template>
 
-  <xsl:template mode="final-fixup" match="*">
-    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:if test="$doDebug">
-      <xsl:message> + [DEBUG] final-fixup: handling <xsl:sequence select="name(.)"/></xsl:message>
-    </xsl:if>
-    <xsl:copy>
-      <xsl:apply-templates select="@*,node()" mode="#current">
-        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-      </xsl:apply-templates>
-    </xsl:copy>
-  </xsl:template>
-  
-  <xsl:template mode="final-fixup" match="@id" priority="2">
-    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <!-- Override this template to implement specific ID generators -->
-    <xsl:variable name="idGenerator" select="string(../@idGenerator)" as="xs:string"/>
-    <xsl:choose>
-      <xsl:when test="$idGenerator = '' or $idGenerator = 'default'">
-        <xsl:if test="$doDebug">
-          <xsl:message> + [DEBUG] final-fixup/@ID: Using default ID generator, returning "<xsl:sequence select="string(.)"/>"</xsl:message>
-        </xsl:if>
-        <xsl:copy/><!-- Use the base generated ID value. -->
-      </xsl:when>
-      <xsl:otherwise>
-        <xsl:message> - [WARNING] Unrecognized ID generator name "<xsl:sequence select="$idGenerator"/>"</xsl:message>
-        <xsl:copy/><!-- Use the base generated ID value. -->
-      </xsl:otherwise>
-    </xsl:choose>    
-  </xsl:template>
-  
-  <xsl:template mode="final-fixup" match="@idGenerator | @class">
-    <!-- Suppress -->
-  </xsl:template>
-  
-  <xsl:template mode="final-fixup" match="@*">
-    <xsl:copy/>
-  </xsl:template>
-  
-  <xsl:template mode="final-fixup" match="text() | processing-instruction()">
-    <xsl:copy/>
-  </xsl:template>
   
   <xsl:template name="constructTopic">
   <!-- Constructs the topic itself. Result is a topic element containing the topic and any nested topics. 

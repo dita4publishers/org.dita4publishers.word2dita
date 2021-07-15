@@ -7,7 +7,7 @@
   xmlns="urn:public:dita4publishers.org:namespaces:word2dita:style2tagmap"
   xmlns:local="http://local/functions"
   exclude-result-prefixes="xs xd w r local"
-  version="2.0">
+  version="3.0">
   <!-- Generates a styles-to-tag map document for all the styles
        in an DOCX styles.xml file.
        
