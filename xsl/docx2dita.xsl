@@ -388,6 +388,9 @@ version="2.0">
     href="resultdocs-xref-fixup.xsl"/>
   <xsl:include 
     href="omml2mml.xsl"/>
+  <xsl:include
+    href="final-fixup.xsl"
+  />
   
   <xsl:template
     match="/"
