@@ -28,7 +28,7 @@
       xmlns="http://reallysi.com/namespaces/generic-wordprocessing-xml"
       
       exclude-result-prefixes="a c pic xs mv mo ve o r m v w10 w wne wp ws local relpath saxon"
-      version="2.0">
+      version="3.0">
   
   <!-- ==================================
        Spreadsheet markup language to Simple Word Processing ML

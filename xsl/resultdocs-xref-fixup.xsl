@@ -8,7 +8,7 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   
   exclude-result-prefixes="xs rsiwp stylemap local relpath xsi"
-  version="2.0">
+  version="3.0">
   
   <!--==========================================
       Word to DITA Transform: Result Docs XRef Fixup Mode

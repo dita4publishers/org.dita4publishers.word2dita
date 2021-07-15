@@ -23,7 +23,7 @@
   xmlns:relpath="http://dita2indesign/functions/relpath"
 
   exclude-result-prefixes="xs xd ooutil mv mo ve o r m v w10 w wne wp pic a rels c local relpath"
-  version="2.0">
+  version="3.0">
   <!-- ============================================================ 
     Utilities for operating on Microsoft Office Office Open files.
     
