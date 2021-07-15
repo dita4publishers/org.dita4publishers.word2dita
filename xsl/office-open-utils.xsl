@@ -68,31 +68,31 @@
       <xsl:apply-templates mode="local:getRunStyleId-styleTokens" 
         select="w:b, w:i, w:u, w:vertAlign, w:strike, w:* except (w:b, w:i, w:u, w:vertAlign, w:strike)"/>
     </xsl:variable>
-    <xsl:sequence select="string-join($styleTokens, '')"/>
+    <xsl:sequence select="string-join($styleTokens, '-')"/>
   </xsl:template>
   
   <xsl:template mode="local:getRunStyleId-styleTokens" match="w:b" as="xs:string">
-    <xsl:sequence select="'Bold'"/>
+    <xsl:sequence select="'b'"/>
   </xsl:template>
   
   <xsl:template mode="local:getRunStyleId-styleTokens" match="w:i" as="xs:string">
-    <xsl:sequence select="'Italic'"/>
+    <xsl:sequence select="'i'"/>
   </xsl:template>
   
   <xsl:template mode="local:getRunStyleId-styleTokens" match="w:strike" as="xs:string">
-    <xsl:sequence select="'LineThrough'"/>
+    <xsl:sequence select="'linethrough'"/>
   </xsl:template>
   
   <xsl:template mode="local:getRunStyleId-styleTokens" match="w:u" as="xs:string">
-    <xsl:sequence select="'Underline'"/>
+    <xsl:sequence select="'u'"/>
   </xsl:template>
   
   <xsl:template mode="local:getRunStyleId-styleTokens" match="w:vertAlign[@w:val='subscript']" as="xs:string">
-    <xsl:sequence select="'Subscript'"/>
+    <xsl:sequence select="'sub'"/>
   </xsl:template>
   
   <xsl:template mode="local:getRunStyleId-styleTokens" match="w:vertAlign[@w:val='superscript']" as="xs:string">
-    <xsl:sequence select="'Superscript'"/>
+    <xsl:sequence select="'sup'"/>
   </xsl:template>
   
   <xsl:template mode="local:getRunStyleId" match="text()" as="xs:string?" priority="-1">
