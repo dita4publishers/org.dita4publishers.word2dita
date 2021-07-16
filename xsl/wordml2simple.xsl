@@ -903,6 +903,11 @@
     
   </xsl:template>
   
+  <!-- Issue 10: Capture the table style as the outputclass for the table -->
+  <xsl:template match="w:tblStyle">
+    <xsl:attribute name="outputclass" select="@w:val"/>
+  </xsl:template>
+  
   <xsl:template mode="table-attributes" match="w:tblBorders">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:apply-templates select="w:insideH | w:insideV" mode="#current"/>
@@ -1611,7 +1616,6 @@
                        w:tblLook |
                        w:tblGrid |
                        w:tblInd |
-                       w:tblStyle |
                        w:tblHeader |
                        w:trHeight |
                        w:lastRenderedPageBreak |
