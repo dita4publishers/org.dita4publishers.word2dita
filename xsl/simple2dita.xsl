@@ -818,72 +818,40 @@
   
   <xsl:template match="rsiwp:td|rsiwp:th">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-        <entry>
-
-            <xsl:if test="@rowspan">
-                <xsl:attribute name="morerows">
-                    <xsl:value-of select="number(@rowspan)-1"/>
-                </xsl:attribute>
-            </xsl:if>
-            <xsl:if test="@colspan">
-                <!-- Allow entries to span columns -->
-              <xsl:variable name="startColNum" as="xs:integer"
-                      select="sum(for $colspan in preceding-sibling::rsiwp:td/@colspan return xs:integer($colspan)) + 
-                              count(preceding-sibling::rsiwp:td[not(@colspan)]) + 1"
-              />
-              <xsl:variable name="endColNum" as="xs:integer"
-                      select="sum(for $colspan in preceding-sibling::rsiwp:td/@colspan return xs:integer($colspan)) + 
-                              count(preceding-sibling::rsiwp:td[not(@colspan)]) + 
-                              xs:integer(@colspan)"
-              />
-              <xsl:variable name="startColName" as="xs:string"
-                select="local:constructColumnName(ancestor::rsiwp:table[1]/rsiwp:cols/rsiwp:col[$startColNum])"
-              />
-              <xsl:variable name="endColName" as="xs:string"
-                select="local:constructColumnName(ancestor::rsiwp:table[1]/rsiwp:cols/rsiwp:col[$endColNum])"
-              />
-                <xsl:attribute name="namest" select="$startColName"/>
-                <xsl:attribute name="nameend" select="$endColName"/>
-            </xsl:if>
-            <xsl:choose>
-                <xsl:when test="@align">
-                    <xsl:attribute name="align">
-                        <xsl:value-of select="@align"/>
-                    </xsl:attribute>
-                </xsl:when>
-                <xsl:when test="../@align">
-                    <xsl:attribute name="align">
-                        <xsl:value-of select="../@align"/>
-                    </xsl:attribute>
-                </xsl:when>
-            </xsl:choose>
-            <xsl:choose>
-                <xsl:when test="@valign">
-                    <xsl:attribute name="valign">
-                        <xsl:value-of select="@valign"/>
-                    </xsl:attribute>
-                </xsl:when>
-                <xsl:when test="../@valign">
-                    <xsl:attribute name="valign">
-                        <xsl:value-of select="../@valign"/>
-                    </xsl:attribute>
-                </xsl:when>
-            </xsl:choose>
-            <xsl:call-template name="handleBodyParas">
-                <xsl:with-param name="bodyParas" select="*"/>
-            </xsl:call-template>
-            <!-- Original for reference: 
-      <xsl:choose>
-        <xsl:when test="table">
-          <p>
-            <xsl:apply-templates select="*|text()|comment()"/>
-          </p>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:apply-templates select="*|text()|comment()"/>
-        </xsl:otherwise>
-      </xsl:choose> -->
-        </entry>
+    
+    <entry>
+      <xsl:sequence select="@outputclass"/>
+      <xsl:if test="@rowspan">
+          <xsl:attribute name="morerows">
+              <xsl:value-of select="number(@rowspan)-1"/>
+          </xsl:attribute>
+      </xsl:if>
+      <xsl:if test="@colspan">
+          <!-- Allow entries to span columns -->
+        <xsl:variable name="startColNum" as="xs:integer"
+                select="sum(for $colspan in preceding-sibling::rsiwp:td/@colspan return xs:integer($colspan)) + 
+                        count(preceding-sibling::rsiwp:td[not(@colspan)]) + 1"
+        />
+        <xsl:variable name="endColNum" as="xs:integer"
+                select="sum(for $colspan in preceding-sibling::rsiwp:td/@colspan return xs:integer($colspan)) + 
+                        count(preceding-sibling::rsiwp:td[not(@colspan)]) + 
+                        xs:integer(@colspan)"
+        />
+        <xsl:variable name="startColName" as="xs:string"
+          select="local:constructColumnName(ancestor::rsiwp:table[1]/rsiwp:cols/rsiwp:col[$startColNum])"
+        />
+        <xsl:variable name="endColName" as="xs:string"
+          select="local:constructColumnName(ancestor::rsiwp:table[1]/rsiwp:cols/rsiwp:col[$endColNum])"
+        />
+        <xsl:attribute name="namest" select="$startColName"/>
+        <xsl:attribute name="nameend" select="$endColName"/>
+      </xsl:if>
+      <xsl:sequence select="(@align, ../@align)[1]"/>
+      <xsl:sequence select="(@valign, ../@valign)[1]"/>
+      <xsl:call-template name="handleBodyParas">
+          <xsl:with-param name="bodyParas" select="*"/>
+      </xsl:call-template>
+    </entry>
   </xsl:template>
   
   
