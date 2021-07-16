@@ -805,7 +805,9 @@
             </xsl:when>
             <xsl:otherwise>
               <row>
-                <entry>Generated row for table with only header rows. DITA requires a body which requires a row.</entry>
+                <xsl:for-each select="1 to count(rsiwp:cols/rsiwp:col)">
+                  <entry>Generated row for table with only header rows. DITA requires a body which requires a row.</entry>
+                </xsl:for-each>
               </row>
             </xsl:otherwise>
           </xsl:choose>
