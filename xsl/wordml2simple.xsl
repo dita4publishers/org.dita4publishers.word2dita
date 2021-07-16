@@ -1147,13 +1147,13 @@
         <xsl:variable name="rowspan" as="xs:integer">
           <xsl:if test="$doDebug">
             <xsl:message>+ [DEBUG]    Calculating rowspan, $vmerge/@w:val="<xsl:value-of select="$vmerge/@w:val"/>"</xsl:message>
-          </xsl:if>
+        </xsl:if>
           <xsl:choose>
             <xsl:when test="not($vmerge)">1</xsl:when>
             <xsl:otherwise>
               <!-- w:vMerge must be present and must have a value of "restart", otherwise
                    this would be a merge continuation cell.
-                -->
+          -->
               <xsl:variable name="myRow" as="element()" select="ancestor::w:tr[1]"/>
               <xsl:variable name="myCol" as="xs:integer" select="count(preceding-sibling::w:tc) + 1"/>
               <xsl:variable name="followingCells" as="element()*"
@@ -1172,16 +1172,16 @@
                 <xsl:for-each select="$followingCells">
                   <xsl:message>+ [DEBUG]   "<xsl:value-of select=".//w:vMerge/@w:val"/>"</xsl:message>
                 </xsl:for-each>
-              </xsl:if>
+    </xsl:if>
               <!-- A cell ends merging (is not part of the merge) if it either specifies a value of "restart"
                    on w:vMerge or does not have a vMerge element at call. If w:vMerge is present by either
                    has no @w:val attribute or specifies "continue", then it is part of the current merge,
                    if there is a merge in effect.
-                -->
+      -->
               <xsl:variable name="restartCell" as="element()?"
                 select="($followingCells[w:tcPr/w:vMerge[@w:val eq 'restart'] or empty(w:tcPr/w:vMerge)])[1]"
-              />
-              <xsl:if test="$doDebug">
+    />
+    <xsl:if test="$doDebug">
                 <xsl:message>+ [DEBUG]   restartCell has vMerge: <xsl:value-of select="exists($restartCell//w:vMerge)"/>, vMerge value: "<xsl:sequence select="$restartCell//w:vMerge/@w:val"/>"</xsl:message>
               </xsl:if>
               <xsl:variable name="rowCount" as="xs:integer">
@@ -1195,12 +1195,12 @@
                   <xsl:otherwise>
                     <xsl:if test="$doDebug">
                       <xsl:message>+ [DEBUG]    No restart cell, counting following cells plus 1</xsl:message>
-                    </xsl:if>
+    </xsl:if>
                     <xsl:sequence select="count($followingCells) + 1"/>
                   </xsl:otherwise>
                 </xsl:choose>
               </xsl:variable>             
-              <xsl:if test="$doDebug">
+      <xsl:if test="$doDebug">
                 <xsl:message>+ [DEBUG]    Returning "<xsl:value-of select="$rowCount"/>"</xsl:message>
               </xsl:if>
               <xsl:sequence select="$rowCount"/>
@@ -1210,15 +1210,48 @@
         
         <xsl:if test="$vmerge">
           <xsl:attribute name="rowspan" select="$rowspan"/>
-        </xsl:if>
-        <!--      <xsl:apply-templates select="w:tcPr/*"/>-->
+      </xsl:if>
+        <xsl:apply-templates select="w:tcPr/*"/>
         <xsl:apply-templates select="*[not(self::w:tcPr)]">
           <xsl:with-param name="mapUnstyledParasTo" select="'entry'" tunnel="yes"/>
         </xsl:apply-templates>
       </td>
     </xsl:if>
   </xsl:template>
+  
+  <xsl:template match="w:tcPr">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+
+    <xsl:apply-templates/>
+  </xsl:template>
+  
+  <xsl:template match="w:tcPr/w:shd">
+    <!-- 
+    <w:shd w:val="clear" w:color="auto" w:fill="FFFF00"/>
+    <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
+    <w:shd w:val="solid" w:color="862362" w:fill="auto"/>
+    <w:shd w:val="clear" w:color="auto" w:fill="CCC0D9" w:themeFill="accent4" w:themeFillTint="66"/>
+    -->
+    <xsl:variable name="colorValue" as="xs:string?"
+      select="
+      if (@w:color eq 'auto')
+      then if (@w:fill eq 'auto')
+           then ()
+           else @w:fill
+      else @w:color
+      "
+    />
+    <xsl:if test="exists($colorValue)">
+      <xsl:attribute name="outputclass" select="concat('background-color_', $colorValue)"/>
+    </xsl:if>
+  </xsl:template>
+  
+  <xsl:template match="w:tcPr/*" priority="-0.4">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
+    <!-- Suppress -->
+  </xsl:template>
+  
   <xsl:template match="w:tab">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:if test="not($filterTabsBoolean)">
