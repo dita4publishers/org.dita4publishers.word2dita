@@ -2353,7 +2353,7 @@
   <xsl:function name="local:isTopicTitle" as="xs:boolean">
     <xsl:param name="context" as="element()"/>
     <xsl:variable name="styleId" as="xs:string"
-      select="($context/@styleName, $context/@styleId)"
+      select="($context/@styleName, $context/@styleId)[1]"
     />
     <xsl:choose>
       <xsl:when test="not($styleId) or $styleId = '' or $styleId = '[None]'">
