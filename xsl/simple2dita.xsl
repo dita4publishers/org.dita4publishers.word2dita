@@ -826,16 +826,21 @@
               <xsl:value-of select="number(@rowspan)-1"/>
           </xsl:attribute>
       </xsl:if>
+      <xsl:variable name="colnum" as="xs:integer"
+        select="
+        if (exists(@colnum))
+        then xs:integer(@colnum)
+        else count(preceding-sibling::rsiwp:td|rsiwp:th) + 1
+        "
+      />
       <xsl:if test="@colspan">
           <!-- Allow entries to span columns -->
         <xsl:variable name="startColNum" as="xs:integer"
                 select="sum(for $colspan in preceding-sibling::rsiwp:td/@colspan return xs:integer($colspan)) + 
-                        count(preceding-sibling::rsiwp:td[not(@colspan)]) + 1"
+                        count(preceding-sibling::rsiwp:td[not(@colspan)]) + $colnum"
         />
         <xsl:variable name="endColNum" as="xs:integer"
-                select="sum(for $colspan in preceding-sibling::rsiwp:td/@colspan return xs:integer($colspan)) + 
-                        count(preceding-sibling::rsiwp:td[not(@colspan)]) + 
-                        xs:integer(@colspan)"
+                select="$startColNum + xs:integer(@colspan) - 1"
         />
         <xsl:variable name="startColName" as="xs:string"
           select="local:constructColumnName(ancestor::rsiwp:table[1]/rsiwp:cols/rsiwp:col[$startColNum])"
@@ -848,10 +853,19 @@
       </xsl:if>
       <xsl:sequence select="(@align, ../@align)[1]"/>
       <xsl:sequence select="(@valign, ../@valign)[1]"/>
+      <xsl:call-template name="s2d-handleShadeAtts"/>
       <xsl:call-template name="handleBodyParas">
           <xsl:with-param name="bodyParas" select="*"/>
       </xsl:call-template>
     </entry>
+  </xsl:template>
+  
+  <!-- Issue 50: Handle shade-related attributes. Generates @base attribute -->
+  <xsl:template name="s2d-handleShadeAtts">
+    <!-- FIXME: Make this more general. Should really have a mode that constructs @base attribute using templates -->
+    <xsl:if test="@shadeColor">
+      <xsl:attribute name="base" select="'shade(' || @shadeColor || ')'"/>
+    </xsl:if>    
   </xsl:template>
   
   
