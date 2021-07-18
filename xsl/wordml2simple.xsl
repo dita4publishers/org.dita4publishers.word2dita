@@ -1132,8 +1132,18 @@
       <xsl:message>+ [DEBUG]     isMergedCell=<xsl:value-of select="$isMergedCell"/></xsl:message>
     </xsl:if>
     <!-- Merged cells are omitted in the result, replaced by explicit @rowspan -->
+    <!-- Issue 49: Calculate the absolute column number, accounting for any preceding horizontal spans -->
+    <!-- Calculate the number of *extra* columns represented by horizontal spans (because we'll still count
+         the spanning cell itself.
+      -->
+    <xsl:variable name="spannedColumns" as="xs:integer"
+      select="sum(for $val in preceding-sibling::w:tc/w:tcPr/w:gridSpan/@w:val return (xs:integer($val) - 1))"
+    />
+    <xsl:variable name="colnum" as="xs:integer"
+      select="count(preceding-sibling::w:tc) + $spannedColumns + 1"
+    />
     <xsl:if test="not($isMergedCell)">
-      <td>
+      <td colnum="{$colnum}">
         <xsl:if test="$horizontalAlignment">
           <xsl:attribute name="align" select="$horizontalAlignment"/>
         </xsl:if>
@@ -1142,7 +1152,7 @@
         </xsl:if>
         <xsl:for-each select="w:tcPr[1]/w:gridSpan[1]/@w:val">
           <xsl:attribute name="colspan" select="."/>
-        </xsl:for-each>
+        </xsl:for-each>        
         
         <xsl:variable name="rowspan" as="xs:integer">
           <xsl:if test="$doDebug">
@@ -1210,7 +1220,7 @@
         
         <xsl:if test="$vmerge">
           <xsl:attribute name="rowspan" select="$rowspan"/>
-      </xsl:if>
+        </xsl:if>
         <xsl:apply-templates select="w:tcPr/*"/>
         <xsl:apply-templates select="*[not(self::w:tcPr)]">
           <xsl:with-param name="mapUnstyledParasTo" select="'entry'" tunnel="yes"/>
@@ -1225,28 +1235,31 @@
     <xsl:apply-templates/>
   </xsl:template>
   
-  <xsl:template match="w:tcPr/w:shd">
-    <!-- 
-    <w:shd w:val="clear" w:color="auto" w:fill="FFFF00"/>
-    <w:shd w:val="clear" w:color="auto" w:fill="auto"/>
-    <w:shd w:val="solid" w:color="862362" w:fill="auto"/>
-    <w:shd w:val="clear" w:color="auto" w:fill="CCC0D9" w:themeFill="accent4" w:themeFillTint="66"/>
-    -->
-    <xsl:variable name="colorValue" as="xs:string?"
-      select="
-      if (@w:color eq 'auto')
-      then if (@w:fill eq 'auto')
-           then ()
-           else @w:fill
-      else @w:color
-      "
-    />
-    <xsl:if test="exists($colorValue)">
-      <xsl:attribute name="outputclass" select="concat('background-color_', $colorValue)"/>
-    </xsl:if>
+  <!-- Issue 50: Capture shading and pattern to attributes: -->
+  <xsl:template match="w:shd" as="attribute()*">
+    <xsl:apply-templates select="@w:color, @w:fill, @w:val"/>
   </xsl:template>
   
-  <xsl:template match="w:tcPr/*" priority="-0.4">
+  <xsl:template match="w:shd/@w:color[. ne 'auto']" as="attribute()*">
+    <xsl:variable name="colorValue" as="xs:string" select="."/>
+    <xsl:attribute name="shadeColor" select="'#' || $colorValue"/>
+  </xsl:template>
+  
+  <xsl:template match="w:shd/@w:fill[. ne 'auto']" as="attribute()*">
+    <xsl:variable name="colorValue" as="xs:string" select="."/>
+    <xsl:attribute name="shadeColor" select="'#' || $colorValue"/>
+  </xsl:template>
+  
+  <xsl:template match="w:shd/@w:val[. ne 'auto']" as="attribute()*">
+    <!-- 17.18.78, ST_Shd (Shading Patterns) in OO XML reference -->
+    <xsl:attribute name="shadePattern" select="."/>
+  </xsl:template>
+  
+  <xsl:template match="w:shd/@*" priority="-1" as="attribute()*">
+    <!-- Don't do anything -->
+  </xsl:template>
+  
+  <xsl:template match="w:tcPr/* | w:trPr/*" priority="-0.4">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <!-- Suppress -->
