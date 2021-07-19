@@ -53,7 +53,8 @@ version="3.0">
   <xsl:param name="submapNamePrefix" as="xs:string" select="'map'"/>
   <xsl:param name="filterBr" as="xs:string" select="'false'"/>
   <xsl:param name="filterTabs" as="xs:string" select="'false'"/>
-  <xsl:param name="includeWordBackPointers" as="xs:string" select="'true'"/>
+  <!-- Issue 49: Set this to false by default, they are not that useful as it happens -->
+  <xsl:param name="includeWordBackPointers" as="xs:string" select="'false'"/>
   <!-- When true, include <data> elements that reflect Word bookmark start and end markers -->
   <xsl:param name="includeWordBookmarks" as="xs:string" select="'false'"/>
   <xsl:param name="language" as="xs:string" select="'en-US'"/>
