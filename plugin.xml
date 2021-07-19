@@ -1,7 +1,7 @@
 <!-- 
   Plugin descriptor for the Word-to-DITA Plugin
   
-  Copyright (c) 2010, 2014 DITA For Publishers
+  Copyright (c) 2010, 2021 DITA For Publishers
     
   This plug-in converts Microsoft Word DOCX documents
   into DITA maps and topics using a style-to-tag
@@ -9,8 +9,9 @@
   XSLT.
   
   -->
-<plugin id="org.dita4publishers.word2dita">
-  <!-- Requires the style2tagMap.xsd which is packaged as part of the
+<?xml-model href="https://www.dita-ot.org/rng/plugin.rnc" type="application/relax-ng-compact-syntax"?>
+<plugin id="org.dita4publishers.word2dita" version="1.0.0RC28">
+  <!-- Requires the style2tagMap.rng which is packaged as part of the
        D4P document types.
     -->
   <require plugin="org.dita4publishers.doctypes"/> 
@@ -20,7 +21,7 @@
   <feature extension="package.support.email" value="ekimber@contrext.com"/>  
 
   <template file="build_transtype-word2dita_template.xml"/>
-  <feature extension="dita.conductor.transtype.check" value="word2dita" type="txt"/>
+  <feature extension="dita.conductor.transtype.check" value="word2dita" type="text"/>
   <!-- Hook in an import of the build_transtype-word2dita.xml file: -->
   <feature extension="dita.conductor.target.relative" value="build.xml" type="file"/>
 

@@ -1,5 +1,7 @@
 # Word-to-DITA
 
+Version: 1.0.0RC28
+
 The input to this plugin is Word DOCX files. If you have DOC files you can use
 the Microsoft-provided Office Migration Planning Manager (OMPM) to produce DOCX files
 from DOC files (http://technet.microsoft.com/en-us/library/cc179179.aspx#section1)
