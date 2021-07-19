@@ -159,8 +159,19 @@
                       structureType="block"
                       topicZone="body"/>
     
-      <characterStyle styleName="Hyperlink" structureType="xref"/>
-
+      <characterStyle styleName="Hyperlink" />
+          
+      <!-- For auto-styled inlines: -->
+      <characterStyle styleName="b" tagName="b"/>
+      <characterStyle styleName="i" tagName="i"/>
+      <characterStyle styleName="b-i" tagName="ph" outputclass="b-i"/>
+      <characterStyle styleName="linethrough" tagName="linethrough"/>
+      <characterStyle styleName="u" tagName="u"/>
+      <characterStyle styleName="sub" tagName="sub"/>
+      <characterStyle styleName="sup" tagName="sup"/>
+      <characterStyle styleName="b-i" tagName="ph" outputclass="b-i"/>
+      <characterStyle styleName="b-i-u" tagName="ph" outputclass="b-i-u"/>
+      <characterStyle styleName="i-u" tagName="ph" outputclass="i-u"/>
 
   </styles>
 </style2tagmap>

@@ -781,23 +781,15 @@
       <xsl:if test="@langAttValue != ''">
         <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
       </xsl:if>
-      
       <tgroup>
         <!-- add colspan data here -->
         <xsl:attribute name="cols" select="count(rsiwp:cols/rsiwp:col)"/>
         <xsl:call-template name="create-colspec"/>      
-        <xsl:choose>
-          <xsl:when test="rsiwp:thead">
-            <thead>
-              <xsl:apply-templates select="rsiwp:thead/rsiwp:tr"/>
-            </thead>
-          </xsl:when>
-          <xsl:when test="rsiwp:tr[rsiwp:th and not(rsiwp:td)]"> <!-- FIXME: Will this ever select anything? I don't think we make rsiwp:th in wordml2simple -->
-            <thead>
-              <xsl:apply-templates select="rsiwp:tr[rsiwp:th and not(rsiwp:td)]"/>
-            </thead>
-          </xsl:when>
-        </xsl:choose>
+        <xsl:if test="rsiwp:thead">
+          <thead>
+            <xsl:apply-templates select="rsiwp:thead/rsiwp:tr"/>
+          </thead>
+        </xsl:if>
         <tbody>
           <xsl:choose>
             <xsl:when test="rsiwp:tbody/rsiwp:tr[rsiwp:td]|rsiwp:tr[rsiwp:td]">
@@ -816,7 +808,7 @@
     </xsl:element>
   </xsl:template>
   
-  <xsl:template match="rsiwp:td|rsiwp:th">
+  <xsl:template match="rsiwp:td">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <entry>
@@ -836,11 +828,17 @@
       <xsl:if test="@colspan">
           <!-- Allow entries to span columns -->
         <xsl:variable name="startColNum" as="xs:integer"
-                select="sum(for $colspan in preceding-sibling::rsiwp:td/@colspan return xs:integer($colspan)) + 
-                        count(preceding-sibling::rsiwp:td[not(@colspan)]) + $colnum"
+                select="$colnum"
+        />
+        <xsl:variable name="colspan" as="xs:integer"
+          select="
+          if (exists(@colspan))
+          then xs:integer(@colspan)
+          else 0
+          "
         />
         <xsl:variable name="endColNum" as="xs:integer"
-                select="$startColNum + xs:integer(@colspan) - 1"
+                select="$startColNum + $colspan - 1"
         />
         <xsl:variable name="startColName" as="xs:string"
           select="local:constructColumnName(ancestor::rsiwp:table[1]/rsiwp:cols/rsiwp:col[$startColNum])"
@@ -1799,8 +1797,7 @@
   
   <xsl:template name="generateXtrcAtt">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:attribute name="xtrc" select="@wordLocation"/>
-   
+    <xsl:attribute name="xtrc" select="@wordLocation"/>      
   </xsl:template>
   
   <xsl:template name="processLevelNContainers">
