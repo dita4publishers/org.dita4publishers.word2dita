@@ -859,11 +859,27 @@
   </xsl:template>
   
   <!-- Issue 50: Handle shade-related attributes. Generates @base attribute -->
-  <xsl:template name="s2d-handleShadeAtts">
-    <!-- FIXME: Make this more general. Should really have a mode that constructs @base attribute using templates -->
-    <xsl:if test="@shadeColor">
-      <xsl:attribute name="base" select="'shade(' || @shadeColor || ')'"/>
-    </xsl:if>    
+  <xsl:template name="s2d-handleShadeAtts" as="attribute()*">
+    <xsl:variable name="baseTokens" as="xs:string*">
+      <xsl:apply-templates select="@*" mode="s2d-handleShadeAtts"/>
+    </xsl:variable>
+    <xsl:if test="exists($baseTokens)">
+      <xsl:attribute name="base"
+        select="string-join($baseTokens, ' ')"
+      />
+    </xsl:if>
+  </xsl:template>
+  
+  <xsl:template match="@shadeColor" mode="s2d-handleShadeAtts" as="xs:string">
+      <xsl:sequence select="'shade(' || . || ')'"/>
+  </xsl:template>
+
+  <xsl:template match="@shadePattern[. ne 'clear']" mode="s2d-handleShadeAtts" as="xs:string">
+    <xsl:sequence select="'shadePattern(' || . || ')'"/>
+  </xsl:template>
+  
+  <xsl:template match="@*" mode="s2d-handleShadeAtts"  priority="-1">
+    <!-- Ignore -->
   </xsl:template>
   
   
