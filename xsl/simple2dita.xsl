@@ -1598,8 +1598,9 @@
             
             <!-- Prolog and body elements for the topic -->
             <!-- Issue 51: Generate titlealts container -->
-            <xsl:if test="exists(current-group()[string(@topicZone) = 'titleAlts'])">
+            <xsl:if test="exists(current-group()[string(@topicZone) = 'titleAlts'])">              
               <xsl:element name="{$titlealtsType}">
+                <xsl:attribute name="w2d_isTitleAlts" select="'true'"/>
                 <xsl:apply-templates select="current-group()[string(@topicZone) = 'titleAlts']">
                   <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
                 </xsl:apply-templates>        
@@ -1609,9 +1610,9 @@
               <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
             </xsl:apply-templates>             
             <xsl:if test="current-group()[string(@topicZone) = 'prolog' or $level = 0] or count($titleIndexEntries) > 0">
-                  <xsl:if test="$doDebug">
-                    <xsl:message> + [DEBUG] constructTopic: Handling prolog paragraphs in the current group.</xsl:message>
-                  </xsl:if>
+              <xsl:if test="$doDebug">
+                <xsl:message> + [DEBUG] constructTopic: Handling prolog paragraphs in the current group.</xsl:message>
+              </xsl:if>
               <xsl:choose>
                 <xsl:when test="$level = 0">
                   <!-- Root topic -->

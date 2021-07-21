@@ -107,6 +107,8 @@
   
   <!-- Issue 51: Generate title alts as necessary -->
   <xsl:template match="*[@w2d_isTopic = ('true')]" mode="final-fixup">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+
     <!-- Context should be a topic element -->
     <xsl:variable name="titlealtsType" as="xs:string"
       select="(@w2d_titlealtsType, 'titlealts')[1]"
@@ -126,14 +128,12 @@
           <xsl:apply-templates select="*[name(.) eq $titlealtsType]" mode="#current">
             <xsl:with-param name="titleAltsNames" as="xs:string*" select="$titleAltsNames"/>
           </xsl:apply-templates>
-          <xsl:apply-templates select="*[position() gt 2]"/>
+          <xsl:apply-templates select="*[position() gt 2]" mode="#current"/>
         </xsl:when>
         <xsl:otherwise>
           <xsl:variable name="titleContents" as="node()*" select="*[1]/node()"/>
           <xsl:element name="{$titlealtsType}">
-            <xsl:message expand-text="yes">+ [DEBUG] final-fixup: Generating {$titlealtsType} element for alt title elements {$titleAltsNames}...</xsl:message>
             <xsl:for-each select="$titleAltsNames">
-              <xsl:message expand-text="yes">+ [DEBUG] final-fixup:   Title alt "{.}"</xsl:message>
               <xsl:element name="{.}">
                 <xsl:apply-templates select="$titleContents" mode="#current"/>
               </xsl:element>
@@ -146,7 +146,35 @@
     
   </xsl:template>
   
+  <xsl:template mode="final-fixup" match="*[string(@w2d_isTitleAlts) = ('true')]">
+    <xsl:param name="titleAltsNames" as="xs:string*" select="()"/>
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    
+    <xsl:variable name="foundTitleAltNames" as="xs:string*"
+      select="* ! name(.) => distinct-values()"
+    />
+    <xsl:variable name="namesToCreate" as="xs:string*"
+      select="for $name in $titleAltsNames return if ($name = $foundTitleAltNames) then () else $name"
+    />
+    <xsl:copy>
+      <xsl:apply-templates select="@*, node()" mode="#current"/>      
+      <xsl:if test="exists($namesToCreate)">
+        <!-- Get the content of the first child of our parent (the topic) -->
+        <xsl:variable name="titleContent" as="node()*"
+          select="../*[1]/node()"
+        />
+        <xsl:for-each select="$namesToCreate">
+          <xsl:element name="{.}">
+            <xsl:apply-templates mode="#current" select="$titleContent"/>
+          </xsl:element>
+        </xsl:for-each>
+      </xsl:if>
+    </xsl:copy>
+    
+  </xsl:template>
+  
   <xsl:template mode="final-fixup" match="@*[starts-with(name(.), 'w2d_')]">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <!-- Suppress in the final result -->
   </xsl:template>
   
