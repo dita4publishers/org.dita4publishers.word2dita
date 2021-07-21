@@ -1597,9 +1597,14 @@
             </xsl:if>
             
             <!-- Prolog and body elements for the topic -->
-            <xsl:apply-templates select="current-group()[string(@topicZone) = 'titleAlts']">
-              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-            </xsl:apply-templates>        
+            <!-- Issue 51: Generate titlealts container -->
+            <xsl:if test="exists(current-group()[string(@topicZone) = 'titleAlts'])">
+              <xsl:element name="{$titlealtsType}">
+                <xsl:apply-templates select="current-group()[string(@topicZone) = 'titleAlts']">
+                  <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+                </xsl:apply-templates>        
+              </xsl:element>
+            </xsl:if>
             <xsl:apply-templates select="current-group()[string(@topicZone) = 'shortdesc']">
               <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
             </xsl:apply-templates>             
