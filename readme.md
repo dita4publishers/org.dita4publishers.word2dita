@@ -17,14 +17,14 @@ See the main DITA for Publishers documentation at http://www.dita4publishers.org
 
 ### DITA Open Toolkit 2.x+
 
-Download the plugin Zip file and install using the `dita install` command by pointing to the Zip file.
+1. Unzip the `dita4publishers-word2dita-plugins-n.n.nRCnn-ot-n.n.n.zip` to the Open Toolkit's `plugins` directory so that each plugin's directory is a direct child of `plugins`
+1. Run the commmand `dita install` to install the new plugins
 
-TBD: Possible to install directly from GitHub or plugin repository?
+If the plugins were previously installed you may need to uninstall them first using `dita uninstall {pluginname}`
 
 ### DITA Open Toolkit 1.8.5
 
-Unzip this so that the org.dita4publishers.word2dita subdirectory 
-is a child of the DITA-OT plugins or demo directory (e.g. C:\DITA-OT\plugins\), and 
-you should be ready to go. 
-
+1. Unzip this so that the `org.dita4publishers.word2dita` directory 
+is a child of the DITA-OT `plugins` directory (e.g. `C:\DITA-OT\plugins\`), and you should be ready to go. 
+2. Run `ant -f integrator.xml` command from the DITA OT directory to integrate the plug-ins.
 
