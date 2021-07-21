@@ -105,6 +105,51 @@
     </ph>
   </xsl:template>
   
+  <!-- Issue 51: Generate title alts as necessary -->
+  <xsl:template match="*[@w2d_isTopic = ('true')]" mode="final-fixup">
+    <!-- Context should be a topic element -->
+    <xsl:variable name="titlealtsType" as="xs:string"
+      select="(@w2d_titlealtsType, 'titlealts')[1]"
+    />
+    
+    <xsl:variable name="titleAltsNames" as="xs:string*"
+      select="tokenize(@w2d_generateTitleAlts, ' ')"
+    />
+    <xsl:variable name="titlealtsElement" as="element()?"
+      select="(*[name(.) eq $titlealtsType])[1]"
+    />
+    <xsl:copy>
+      <xsl:apply-templates select="@*" mode="#current"/>
+      <xsl:apply-templates select="*[1]" mode="#current"/><!-- First child must be (should be) title element -->
+      <xsl:choose>
+        <xsl:when test="exists(*[name(.) eq $titlealtsType])">
+          <xsl:apply-templates select="*[name(.) eq $titlealtsType]" mode="#current">
+            <xsl:with-param name="titleAltsNames" as="xs:string*" select="$titleAltsNames"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="*[position() gt 2]"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:variable name="titleContents" as="node()*" select="*[1]/node()"/>
+          <xsl:element name="{$titlealtsType}">
+            <xsl:message expand-text="yes">+ [DEBUG] final-fixup: Generating {$titlealtsType} element for alt title elements {$titleAltsNames}...</xsl:message>
+            <xsl:for-each select="$titleAltsNames">
+              <xsl:message expand-text="yes">+ [DEBUG] final-fixup:   Title alt "{.}"</xsl:message>
+              <xsl:element name="{.}">
+                <xsl:apply-templates select="$titleContents" mode="#current"/>
+              </xsl:element>
+            </xsl:for-each>
+          </xsl:element>
+          <xsl:apply-templates select="*[position() gt 1]" mode="#current"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </xsl:copy>
+    
+  </xsl:template>
+  
+  <xsl:template mode="final-fixup" match="@*[starts-with(name(.), 'w2d_')]">
+    <!-- Suppress in the final result -->
+  </xsl:template>
+  
   <xsl:template mode="final-fixup" match="@id">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <!-- Override this template to implement specific ID generators -->

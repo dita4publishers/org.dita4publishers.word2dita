@@ -283,7 +283,7 @@
       <xsl:sequence select="local:getTagnameFromNestedProperties($styleData)"/>
       <xsl:sequence select="$styleData/@*"/>
       <xsl:apply-templates select="$styleData/stylemap:additionalAttributes"/>
-      <xsl:if test="not($styleData/@topicZone)">
+      <xsl:if test="empty($styleData/@topicZone)">
         <xsl:attribute name="topicZone" 
           select="'body'"
         />

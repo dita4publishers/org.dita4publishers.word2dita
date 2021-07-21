@@ -1506,25 +1506,23 @@
     />
     
     <xsl:variable name="bodyType" as="xs:string"
-      select="
-      if (@bodyType)
-      then @bodyType
-      else 'body'
-      "
+      select="(@bodyType, 'body')[1]"
     />
     
     <xsl:variable name="prologType" as="xs:string"
-      select="
-      if (@prologType)
-      then @prologType
-      else 'prolog'
-      "
+      select="(@prologType, 'prolog')[1]"
+    />
+
+    <!-- Issue 51: capture titlealts type -->
+    <xsl:variable name="titlealtsType" as="xs:string"
+      select="(@titlealtsType, 'titlealts')[1]"
     />
     
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] constructTopic: topicType="<xsl:value-of select="$topicType"/>"</xsl:message>
       <xsl:message> + [DEBUG] constructTopic: bodyType="<xsl:value-of select="$bodyType"/>"</xsl:message>
       <xsl:message> + [DEBUG] constructTopic: prologType="<xsl:value-of select="$prologType"/>"</xsl:message>
+      <xsl:message> + [DEBUG] constructTopic: titlealtsType="<xsl:value-of select="$titlealtsType"/>"</xsl:message>
       <xsl:message> + [DEBUG] constructTopic: initialSectionType="<xsl:value-of select="$initialSectionType"/>"</xsl:message>
     </xsl:if>
     
@@ -1544,6 +1542,8 @@
       <xsl:message> + [DEBUG] constructTopic: schemaAtts=<xsl:sequence select="$schemaAtts"/></xsl:message>
     </xsl:if>
     <xsl:element name="{$topicType}">
+      <!-- Issue 51: Enable identification of topics in final-fixup mode -->
+      <xsl:attribute name="w2d_isTopic" select="'true'"/>
       <xsl:attribute name="id" select="$topicName"/>
       <xsl:call-template name="generateXtrcAtt">
         <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
@@ -1561,6 +1561,11 @@
       <xsl:if test="@outputclass">
         <xsl:attribute name="outputclass" select="@outputclass"/>
       </xsl:if>
+      <!-- Issue 51: Capture generateTitleAlts and titlealts type for handling during final fixup: -->
+      <xsl:if test="exists(@generateTitleAlts)">
+        <xsl:attribute name="w2d_generateTitleAlts" select="@generateTitleAlts"/>        
+      </xsl:if>
+      <xsl:attribute name="w2d_titlealtsType" select="$titlealtsType"/>
       <xsl:variable name="titleTagName" as="xs:string"
         select="if (@tagName)
         then @tagName
