@@ -1213,42 +1213,31 @@
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] Handling run with tag <xsl:value-of select="$tagName"/></xsl:message>
     </xsl:if>
+    <xsl:variable name="directResult" as="node()*">
+      <xsl:element name="{$tagName}">
+        <xsl:call-template name="generateXtrcAtt"/>
+        <xsl:sequence select="@outputclass"/>
+        <xsl:if test="@langAttValue != ''">
+          <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
+        </xsl:if>
+        <xsl:variable name="atts" as="attribute()*" select="@*"/>
+        <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates mode="#current"/>
+      </xsl:element>
+    </xsl:variable>
     <xsl:choose>
       <xsl:when test="$containerType != ''">
         <xsl:element name="{$containerType}">
           <xsl:if test="@containerTypeOutputclass">
             <xsl:attribute name="outputclass" select="@containerTypeOutputclass"/>
           </xsl:if>
-          <xsl:element name="{$tagName}">
-            <xsl:call-template name="generateXtrcAtt"/>
-            <xsl:if test="@outputclass">
-              <xsl:attribute name="outputclass" select="string(@outputclass)"/>
-            </xsl:if>
-            <xsl:if test="@langAttValue != ''">
-              <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
-            </xsl:if>
-            <xsl:variable name="atts" as="attribute()*" select="@*"/>
-            <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
-              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-            </xsl:apply-templates>
-            <xsl:apply-templates mode="#current"/>
-          </xsl:element>
+          <xsl:sequence select="$directResult"/>
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:element name="{$tagName}">
-          <xsl:call-template name="generateXtrcAtt"/>
-          <xsl:if test="@outputclass">
-            <xsl:attribute name="outputclass" select="string(@outputclass)"/>
-          </xsl:if>
-          <xsl:if test="@langAttValue != ''">
-            <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
-          </xsl:if>
-          <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
-            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-          </xsl:apply-templates>
-          <xsl:apply-templates mode="#current"/>
-        </xsl:element>
+        <xsl:sequence select="$directResult"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -2051,9 +2040,7 @@
       <xsl:otherwise>
         <xsl:element name="{local-name()}">
           <xsl:call-template name="generateXtrcAtt"/>
-          <xsl:if test="@outputclass">
-            <xsl:attribute name="outputclass" select="string(@outputclass)"/>
-          </xsl:if>
+          <xsl:sequence select="@outputclass"/>
           <xsl:if test="@langAttValue != ''">
             <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
           </xsl:if>
