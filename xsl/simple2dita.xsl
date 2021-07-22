@@ -1220,7 +1220,6 @@
         <xsl:if test="@langAttValue != ''">
           <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
         </xsl:if>
-        <xsl:variable name="atts" as="attribute()*" select="@*"/>
         <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
           <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
         </xsl:apply-templates>
@@ -2134,6 +2133,13 @@
     />
     <xsl:element name="{$tagName}">
       <!-- Not all Word hyperlinks become DITA hyperlinks: -->
+      <xsl:sequence select="@outputclass"/>
+      <xsl:if test="@langAttValue != ''">
+        <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
+      </xsl:if>
+      <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
       <xsl:if test="string(@structureType) = 'xref'">
         <xsl:variable name="origHref" select="@href" as="xs:string"/>
         <xsl:variable name="href" as="xs:string"
@@ -2199,9 +2205,6 @@
         </xsl:if>
         <xsl:if test="$format">
           <xsl:attribute name="format" select="$format"/>
-        </xsl:if>
-        <xsl:if test="@langAttValue != ''">
-          <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
         </xsl:if>
       </xsl:if>
       <xsl:apply-templates mode="#current"/>
