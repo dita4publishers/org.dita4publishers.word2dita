@@ -238,6 +238,7 @@
 		  <param name="tableWidthsProportional" expression="${w2d.table.widths.proportional}"
 		    if="w2d.table.widths.proportional"
 		  />
+			<param name="ditaVersion" expression="${w2d.dita.version}" if="w2d.ditaversion"/>
 		  <xmlcatalog refid="dita.catalog"></xmlcatalog>
 		</xslt>
 		<echo>[INFO] Transform complete</echo>
