@@ -506,6 +506,7 @@
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="runSequence" as="element()*"/>
     <xsl:param name="stylesDoc" as="document-node()" tunnel="yes"/>
+    <xsl:variable name="doDebug" as="xs:boolean" select="exists($runSequence[1][self::w:hyperlink]) or true()"/>
     
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] handleRunSequence: runSequence=<xsl:sequence select="$runSequence"/></xsl:message>

@@ -165,7 +165,7 @@
       <characterStyle styleName="b" tagName="b"/>
       <characterStyle styleName="i" tagName="i"/>
       <characterStyle styleName="b-i" tagName="ph" outputclass="b-i"/>
-      <characterStyle styleName="linethrough" tagName="linethrough"/>
+      <characterStyle styleName="line-through" tagName="line-through"/>
       <characterStyle styleName="u" tagName="u"/>
       <characterStyle styleName="sub" tagName="sub"/>
       <characterStyle styleName="sup" tagName="sup"/>
