@@ -5,7 +5,7 @@
   xmlns="urn:public:dita4publishers.org:namespaces:word2dita:style2tagmap"
   xmlns:s2m="urn:public:dita4publishers.org:namespaces:word2dita:style2tagmap"
   exclude-result-prefixes="xs xd s2m"
-  version="2.0">
+  version="3.0">
   <!-- ==============================================================
        DITA for Publishers
        
