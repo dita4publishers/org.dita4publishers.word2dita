@@ -53,7 +53,8 @@ version="3.0">
   <xsl:param name="submapNamePrefix" as="xs:string" select="'map'"/>
   <xsl:param name="filterBr" as="xs:string" select="'false'"/>
   <xsl:param name="filterTabs" as="xs:string" select="'false'"/>
-  <xsl:param name="includeWordBackPointers" as="xs:string" select="'true'"/>
+  <!-- Issue 49: Set this to false by default, they are not that useful as it happens -->
+  <xsl:param name="includeWordBackPointers" as="xs:string" select="'false'"/>
   <!-- When true, include <data> elements that reflect Word bookmark start and end markers -->
   <xsl:param name="includeWordBookmarks" as="xs:string" select="'false'"/>
   <xsl:param name="language" as="xs:string" select="'en-US'"/>
@@ -73,8 +74,8 @@ version="3.0">
   
   <!-- Because MathML container will be different in DITA 1.3, we need to allow for setting the
     intended version. The version is noted in the topic shells, but we cannot access that info
-  from within XSLT/XPATH. Default value is 1.2. -->
-  <xsl:param name="ditaVersion" select="'1.2'" as="xs:string" />
+  from within XSLT/XPATH. Default value is 1.3. -->
+  <xsl:param name="ditaVersion" select="'1.3'" as="xs:string" />
   
   <!-- Because we only have differences between DITA 1.2 and DITA 1.3 (right now), if $ditaVersion is
     not 1.3, then assume 1.2 -->

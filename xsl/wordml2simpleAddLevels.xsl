@@ -369,7 +369,8 @@
       <!-- Properties from the paragraph element: -->
       <xsl:sequence select="
           @styleName, 
-          @styleId"
+          @styleId,
+          @generateTitleAlts"
       />
       <xsl:for-each select="$topicOutputElem">
         <xsl:sequence 

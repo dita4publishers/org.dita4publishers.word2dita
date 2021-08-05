@@ -781,23 +781,15 @@
       <xsl:if test="@langAttValue != ''">
         <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
       </xsl:if>
-      
       <tgroup>
         <!-- add colspan data here -->
         <xsl:attribute name="cols" select="count(rsiwp:cols/rsiwp:col)"/>
         <xsl:call-template name="create-colspec"/>      
-        <xsl:choose>
-          <xsl:when test="rsiwp:thead">
-            <thead>
-              <xsl:apply-templates select="rsiwp:thead/rsiwp:tr"/>
-            </thead>
-          </xsl:when>
-          <xsl:when test="rsiwp:tr[rsiwp:th and not(rsiwp:td)]"> <!-- FIXME: Will this ever select anything? I don't think we make rsiwp:th in wordml2simple -->
-            <thead>
-              <xsl:apply-templates select="rsiwp:tr[rsiwp:th and not(rsiwp:td)]"/>
-            </thead>
-          </xsl:when>
-        </xsl:choose>
+        <xsl:if test="rsiwp:thead">
+          <thead>
+            <xsl:apply-templates select="rsiwp:thead/rsiwp:tr"/>
+          </thead>
+        </xsl:if>
         <tbody>
           <xsl:choose>
             <xsl:when test="rsiwp:tbody/rsiwp:tr[rsiwp:td]|rsiwp:tr[rsiwp:td]">
@@ -816,7 +808,7 @@
     </xsl:element>
   </xsl:template>
   
-  <xsl:template match="rsiwp:td|rsiwp:th">
+  <xsl:template match="rsiwp:td">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <entry>
@@ -836,11 +828,17 @@
       <xsl:if test="@colspan">
           <!-- Allow entries to span columns -->
         <xsl:variable name="startColNum" as="xs:integer"
-                select="sum(for $colspan in preceding-sibling::rsiwp:td/@colspan return xs:integer($colspan)) + 
-                        count(preceding-sibling::rsiwp:td[not(@colspan)]) + $colnum"
+                select="$colnum"
+        />
+        <xsl:variable name="colspan" as="xs:integer"
+          select="
+          if (exists(@colspan))
+          then xs:integer(@colspan)
+          else 0
+          "
         />
         <xsl:variable name="endColNum" as="xs:integer"
-                select="$startColNum + xs:integer(@colspan) - 1"
+                select="$startColNum + $colspan - 1"
         />
         <xsl:variable name="startColName" as="xs:string"
           select="local:constructColumnName(ancestor::rsiwp:table[1]/rsiwp:cols/rsiwp:col[$startColNum])"
@@ -861,11 +859,27 @@
   </xsl:template>
   
   <!-- Issue 50: Handle shade-related attributes. Generates @base attribute -->
-  <xsl:template name="s2d-handleShadeAtts">
-    <!-- FIXME: Make this more general. Should really have a mode that constructs @base attribute using templates -->
-    <xsl:if test="@shadeColor">
-      <xsl:attribute name="base" select="'shade(' || @shadeColor || ')'"/>
-    </xsl:if>    
+  <xsl:template name="s2d-handleShadeAtts" as="attribute()*">
+    <xsl:variable name="baseTokens" as="xs:string*">
+      <xsl:apply-templates select="@*" mode="s2d-handleShadeAtts"/>
+    </xsl:variable>
+    <xsl:if test="exists($baseTokens)">
+      <xsl:attribute name="base"
+        select="string-join($baseTokens, ' ')"
+      />
+    </xsl:if>
+  </xsl:template>
+  
+  <xsl:template match="@shadeColor" mode="s2d-handleShadeAtts" as="xs:string">
+      <xsl:sequence select="'shade(' || . || ')'"/>
+  </xsl:template>
+
+  <xsl:template match="@shadePattern[. ne 'clear']" mode="s2d-handleShadeAtts" as="xs:string">
+    <xsl:sequence select="'shadePattern(' || . || ')'"/>
+  </xsl:template>
+  
+  <xsl:template match="@*" mode="s2d-handleShadeAtts"  priority="-1">
+    <!-- Ignore -->
   </xsl:template>
   
   
@@ -1199,42 +1213,30 @@
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] Handling run with tag <xsl:value-of select="$tagName"/></xsl:message>
     </xsl:if>
+    <xsl:variable name="directResult" as="node()*">
+      <xsl:element name="{$tagName}">
+        <xsl:call-template name="generateXtrcAtt"/>
+        <xsl:sequence select="@outputclass"/>
+        <xsl:if test="@langAttValue != ''">
+          <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
+        </xsl:if>
+        <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates mode="#current"/>
+      </xsl:element>
+    </xsl:variable>
     <xsl:choose>
       <xsl:when test="$containerType != ''">
         <xsl:element name="{$containerType}">
           <xsl:if test="@containerTypeOutputclass">
             <xsl:attribute name="outputclass" select="@containerTypeOutputclass"/>
           </xsl:if>
-          <xsl:element name="{$tagName}">
-            <xsl:call-template name="generateXtrcAtt"/>
-            <xsl:if test="@outputclass">
-              <xsl:attribute name="outputclass" select="string(@outputclass)"/>
-            </xsl:if>
-            <xsl:if test="@langAttValue != ''">
-              <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
-            </xsl:if>
-            <xsl:variable name="atts" as="attribute()*" select="@*"/>
-            <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
-              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-            </xsl:apply-templates>
-            <xsl:apply-templates mode="#current"/>
-          </xsl:element>
+          <xsl:sequence select="$directResult"/>
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:element name="{$tagName}">
-          <xsl:call-template name="generateXtrcAtt"/>
-          <xsl:if test="@outputclass">
-            <xsl:attribute name="outputclass" select="string(@outputclass)"/>
-          </xsl:if>
-          <xsl:if test="@langAttValue != ''">
-            <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
-          </xsl:if>
-          <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
-            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-          </xsl:apply-templates>
-          <xsl:apply-templates mode="#current"/>
-        </xsl:element>
+        <xsl:sequence select="$directResult"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -1492,25 +1494,23 @@
     />
     
     <xsl:variable name="bodyType" as="xs:string"
-      select="
-      if (@bodyType)
-      then @bodyType
-      else 'body'
-      "
+      select="(@bodyType, 'body')[1]"
     />
     
     <xsl:variable name="prologType" as="xs:string"
-      select="
-      if (@prologType)
-      then @prologType
-      else 'prolog'
-      "
+      select="(@prologType, 'prolog')[1]"
+    />
+
+    <!-- Issue 51: capture titlealts type -->
+    <xsl:variable name="titlealtsType" as="xs:string"
+      select="(@titlealtsType, 'titlealts')[1]"
     />
     
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] constructTopic: topicType="<xsl:value-of select="$topicType"/>"</xsl:message>
       <xsl:message> + [DEBUG] constructTopic: bodyType="<xsl:value-of select="$bodyType"/>"</xsl:message>
       <xsl:message> + [DEBUG] constructTopic: prologType="<xsl:value-of select="$prologType"/>"</xsl:message>
+      <xsl:message> + [DEBUG] constructTopic: titlealtsType="<xsl:value-of select="$titlealtsType"/>"</xsl:message>
       <xsl:message> + [DEBUG] constructTopic: initialSectionType="<xsl:value-of select="$initialSectionType"/>"</xsl:message>
     </xsl:if>
     
@@ -1530,6 +1530,8 @@
       <xsl:message> + [DEBUG] constructTopic: schemaAtts=<xsl:sequence select="$schemaAtts"/></xsl:message>
     </xsl:if>
     <xsl:element name="{$topicType}">
+      <!-- Issue 51: Enable identification of topics in final-fixup mode -->
+      <xsl:attribute name="w2d_isTopic" select="'true'"/>
       <xsl:attribute name="id" select="$topicName"/>
       <xsl:call-template name="generateXtrcAtt">
         <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
@@ -1547,6 +1549,11 @@
       <xsl:if test="@outputclass">
         <xsl:attribute name="outputclass" select="@outputclass"/>
       </xsl:if>
+      <!-- Issue 51: Capture generateTitleAlts and titlealts type for handling during final fixup: -->
+      <xsl:if test="exists(@generateTitleAlts)">
+        <xsl:attribute name="w2d_generateTitleAlts" select="@generateTitleAlts"/>        
+      </xsl:if>
+      <xsl:attribute name="w2d_titlealtsType" select="$titlealtsType"/>
       <xsl:variable name="titleTagName" as="xs:string"
         select="if (@tagName)
         then @tagName
@@ -1578,16 +1585,22 @@
             </xsl:if>
             
             <!-- Prolog and body elements for the topic -->
-            <xsl:apply-templates select="current-group()[string(@topicZone) = 'titleAlts']">
-              <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
-            </xsl:apply-templates>        
+            <!-- Issue 51: Generate titlealts container -->
+            <xsl:if test="exists(current-group()[string(@topicZone) = 'titleAlts'])">              
+              <xsl:element name="{$titlealtsType}">
+                <xsl:attribute name="w2d_isTitleAlts" select="'true'"/>
+                <xsl:apply-templates select="current-group()[string(@topicZone) = 'titleAlts']">
+                  <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+                </xsl:apply-templates>        
+              </xsl:element>
+            </xsl:if>
             <xsl:apply-templates select="current-group()[string(@topicZone) = 'shortdesc']">
               <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
             </xsl:apply-templates>             
             <xsl:if test="current-group()[string(@topicZone) = 'prolog' or $level = 0] or count($titleIndexEntries) > 0">
-                  <xsl:if test="$doDebug">
-                    <xsl:message> + [DEBUG] constructTopic: Handling prolog paragraphs in the current group.</xsl:message>
-                  </xsl:if>
+              <xsl:if test="$doDebug">
+                <xsl:message> + [DEBUG] constructTopic: Handling prolog paragraphs in the current group.</xsl:message>
+              </xsl:if>
               <xsl:choose>
                 <xsl:when test="$level = 0">
                   <!-- Root topic -->
@@ -1799,8 +1812,7 @@
   
   <xsl:template name="generateXtrcAtt">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:attribute name="xtrc" select="@wordLocation"/>
-   
+    <xsl:attribute name="xtrc" select="@wordLocation"/>      
   </xsl:template>
   
   <xsl:template name="processLevelNContainers">
@@ -2027,9 +2039,7 @@
       <xsl:otherwise>
         <xsl:element name="{local-name()}">
           <xsl:call-template name="generateXtrcAtt"/>
-          <xsl:if test="@outputclass">
-            <xsl:attribute name="outputclass" select="string(@outputclass)"/>
-          </xsl:if>
+          <xsl:sequence select="@outputclass"/>
           <xsl:if test="@langAttValue != ''">
             <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
           </xsl:if>
@@ -2123,6 +2133,13 @@
     />
     <xsl:element name="{$tagName}">
       <!-- Not all Word hyperlinks become DITA hyperlinks: -->
+      <xsl:sequence select="@outputclass"/>
+      <xsl:if test="@langAttValue != ''">
+        <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
+      </xsl:if>
+      <xsl:apply-templates select="stylemap:additionalAttributes" mode="additional-attributes">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
       <xsl:if test="string(@structureType) = 'xref'">
         <xsl:variable name="origHref" select="@href" as="xs:string"/>
         <xsl:variable name="href" as="xs:string"
@@ -2188,9 +2205,6 @@
         </xsl:if>
         <xsl:if test="$format">
           <xsl:attribute name="format" select="$format"/>
-        </xsl:if>
-        <xsl:if test="@langAttValue != ''">
-          <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
         </xsl:if>
       </xsl:if>
       <xsl:apply-templates mode="#current"/>

@@ -54,6 +54,7 @@
     -->
   <xsl:template mode="handleComplexFieldType" match=".[lower-case(.) eq 'ref']">
     <xsl:param name="runSequence" as="element()*" tunnel="yes" select="()"/>
+    <xsl:param name="stylesDoc" as="document-node()" tunnel="yes"/>
     <xsl:variable name="fieldType" as="xs:string" select="."/>
 
     <xsl:variable name="instruction" as="xs:string"
@@ -84,11 +85,27 @@
         <!-- NOTE: The simple2dita processing will treat this as link to a bookmark because the href value
                    is not an absolute URL.
           -->
+        <!-- Issue 48: Look up any style-to-tag mapping for "Hyperlink" -->
+        <xsl:variable name="styleName" select="'Hyperlink'"/>
+        <xsl:variable name="styleId" select="$styleName"/>
+        <xsl:variable name="styleMapByName" as="element()?"
+          select="key('styleMapsByName', lower-case($styleName), $styleMapDoc)[1]"
+        />
+        <xsl:variable name="styleMapById" as="element()?"
+          select="key('styleMapsById', $styleId, $styleMapDoc)[1]"
+        />
+        <xsl:variable name="runStyleMap" as="element()?"
+          select="($styleMapByName, $styleMapById)[1]"
+        />        
         <hyperlink href="{$targetID}"
           styleId="Hyperlink"
           structureType="xref"
           tagName="xref"
-        />
+        >
+          <!-- NOTE: Any of @structureType or @tagName from the style map will override the 
+                     values set above on the <hyperlink> element. See https://www.w3.org/TR/xslt-30/#attributes-for-lres -->
+          <xsl:sequence select="$runStyleMap/@*, $runStyleMap/stylemap:additionalAttributes"/>
+        </hyperlink>
       </xsl:when>
       <xsl:otherwise>
         <!-- Not a hyperlink. Not sure what to do. -->

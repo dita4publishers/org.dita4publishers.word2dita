@@ -283,7 +283,7 @@
       <xsl:sequence select="local:getTagnameFromNestedProperties($styleData)"/>
       <xsl:sequence select="$styleData/@*"/>
       <xsl:apply-templates select="$styleData/stylemap:additionalAttributes"/>
-      <xsl:if test="not($styleData/@topicZone)">
+      <xsl:if test="empty($styleData/@topicZone)">
         <xsl:attribute name="topicZone" 
           select="'body'"
         />
@@ -506,6 +506,7 @@
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="runSequence" as="element()*"/>
     <xsl:param name="stylesDoc" as="document-node()" tunnel="yes"/>
+    <xsl:variable name="doDebug" as="xs:boolean" select="exists($runSequence[1][self::w:hyperlink]) or true()"/>
     
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] handleRunSequence: runSequence=<xsl:sequence select="$runSequence"/></xsl:message>
