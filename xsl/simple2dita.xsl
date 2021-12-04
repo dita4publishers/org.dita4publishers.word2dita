@@ -7,7 +7,7 @@
       xmlns:relpath="http://dita2indesign/functions/relpath"
       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
       xmlns:m="http://www.w3.org/1998/Math/MathML"
-      
+      expand-text="yes"      
       exclude-result-prefixes="xs rsiwp stylemap local relpath xsi"
       version="3.0">
 
@@ -647,7 +647,9 @@
           <xsl:apply-templates select="rsiwp:bookmarkStart" mode="generate-para-ids">
             <xsl:with-param name="tagName" select="$tagName"/>
           </xsl:apply-templates>
-          <xsl:sequence select="./@outputclass"/>
+          <xsl:apply-templates select="." mode="constructOutputclass">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() and exists(rsiwp:formatOverrides/*)"/>
+          </xsl:apply-templates>
           <xsl:apply-templates select="@dataName, @typeAttValue"/>
           <xsl:apply-templates select="." mode="generate-id">
             <xsl:with-param name="idGenerator" select="$idGenerator" as="xs:string"/>
@@ -663,6 +665,55 @@
         </xsl:element>
       </xsl:otherwise>
     </xsl:choose>    
+  </xsl:template>
+
+  <!-- Construct @outputclass value, reflecting any explicit @outputclass and format overrides -->
+  <xsl:template mode="constructOutputclass" match="*" priority="-1" as="attribute()?">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: Constructing outputclass value...</xsl:message>
+    </xsl:if>
+    <xsl:variable name="tokens" as="xs:string*">
+      <xsl:apply-templates mode="#current" select="@outputclass, rsiwp:formatOverrides"/>
+    </xsl:variable>
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: tokens: {$tokens}</xsl:message>
+    </xsl:if>
+    <xsl:if test="exists($tokens)">
+      <xsl:if test="$doDebug">
+        <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: Making @outputclass attribute</xsl:message>
+      </xsl:if>
+      <xsl:attribute name="outputclass" select="string-join(sort($tokens), ' ')"/>
+    </xsl:if>
+  </xsl:template>
+  
+  <xsl:template mode="constructOutputclass" match="rsiwp:formatOverrides" as="xs:string*">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: Applying templates to children</xsl:message>
+    </xsl:if>
+    <xsl:apply-templates mode="#current" select="element()"/>
+  </xsl:template>
+  
+  <xsl:template mode="constructOutputclass" match="rsiwp:formatOverrides/rsiwp:*" as="xs:string*">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] constructOutputclass - {name(..)}/{name(.)}: Constructing result "{concat(@name, '-', @value)}" </xsl:message>
+    </xsl:if>
+    <xsl:sequence select="concat(@name, '-', @value)"/>
+  </xsl:template>
+  
+  <xsl:template mode="constructOutputclass" match="@outputclass" as="xs:string*">
+    <xsl:sequence select="tokenize(., ' ')"/>
+  </xsl:template>
+  
+  <xsl:template mode="constructOutputclass" match="text()"/>  
+
+  <xsl:template mode="constructOutputclass" match="*" priority="-1.5">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+
+    <xsl:message>+ [DEBUG] constructOutputclass - {name(..)}/{name(.)}: Fallback</xsl:message>
+    <!-- Suppress -->
   </xsl:template>
   
   <xsl:template mode="#default" match="stylemap:additionalAttributes"/>
@@ -1239,6 +1290,10 @@
         <xsl:sequence select="$directResult"/>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+  
+  <xsl:template match="rsiwp:formatOverrides" mode="p-content">
+    <!-- Handled in its own mode -->
   </xsl:template>
   
   <xsl:template match="text()" mode="p-content">

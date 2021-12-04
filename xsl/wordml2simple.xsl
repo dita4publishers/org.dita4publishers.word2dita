@@ -33,7 +33,7 @@
       MS Office 2007 Office Open XML to generic
       XML transform.
       
-      Copyright (c) 2009, 2020 DITA For Publishers
+      Copyright (c) 2009, 2021 DITA For Publishers
       
       This transform is a generic transform that produces a simplified
       form of generic XML from Office Open XML.
@@ -52,6 +52,7 @@
  -->
   
   <xsl:import href="modeHandleComplexField.xsl"/>
+  <xsl:import href="getFormatOverrides.xsl"/>
   
   <xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
     <xd:desc>
@@ -185,7 +186,7 @@
     </xsl:if>
     <xsl:variable name="styleData" as="element()">
       <xsl:choose>
-        <xsl:when test="$styleMap">          
+        <xsl:when test="$styleMap">
           <xsl:sequence select="$styleMap"/>
         </xsl:when>
         <xsl:when test="not($styleMap) and $specifiedStyleId = '' and normalize-space(.) = ''">
@@ -235,6 +236,7 @@
         </xsl:otherwise>
       </xsl:choose>      
     </xsl:variable>
+     
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] match on w:p: structureType = "<xsl:sequence select="string($styleData/@structureType)"/>"</xsl:message>
     </xsl:if>
@@ -254,7 +256,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:when>
-  <xsl:otherwise>
+    <xsl:otherwise>
       <xsl:if test="$doDebug">
         <xsl:message> + [DEBUG] match on w:p: Paragraph not skipped, calling handlePara. p=<xsl:sequence select="substring(string(./w:r[1]), 0, 40)"/></xsl:message>
       </xsl:if>
@@ -263,7 +265,7 @@
         <xsl:with-param name="styleData" select="$styleData" as="element()"/>
       </xsl:call-template>  
     </xsl:otherwise>
-</xsl:choose>  
+  </xsl:choose>  
 </xsl:template>
   
   <xsl:template name="handlePara">
@@ -296,6 +298,9 @@
       <xsl:if test="$doDebug">
         <xsl:message> + [DEBUG] handlePara: styleData=<xsl:sequence select="$styleData"/></xsl:message>
       </xsl:if>
+      <!-- Issue 74: Capture format overrides: -->
+      <xsl:message>+ [DEBUG] Applying templates in mode get-format-overrides ....</xsl:message>
+      <xsl:apply-templates mode="get-format-overrides" select="."/>        
       <xsl:sequence select="$styleData/stylemap:*"/>
       <xsl:if test="$doDebug">        
         <xsl:message> + [DEBUG] handlePara: p="<xsl:sequence select="substring(normalize-space(.), 1, 40)"/>"</xsl:message>
@@ -306,8 +311,6 @@
       </xsl:call-template>      
     </p>
   </xsl:template>
-  
-  
   
   <!-- 
     
