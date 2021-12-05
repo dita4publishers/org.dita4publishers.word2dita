@@ -700,7 +700,7 @@
     <xsl:if test="$doDebug">
       <xsl:message>+ [DEBUG] constructOutputclass - {name(..)}/{name(.)}: Constructing result "{concat(@name, '-', @value)}" </xsl:message>
     </xsl:if>
-    <xsl:sequence select="concat(@name, '-', @value)"/>
+    <xsl:sequence select="concat(@name, '_', @value)"/>
   </xsl:template>
   
   <xsl:template mode="constructOutputclass" match="@outputclass" as="xs:string*">
