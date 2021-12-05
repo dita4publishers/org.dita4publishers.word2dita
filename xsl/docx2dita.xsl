@@ -131,6 +131,9 @@ version="3.0">
     select="$debugBoolean or matches($saveIntermediateDocs, 'true|yes|1|on', 'i')"
   />  
   
+  <!-- When true, capture format overrides for paragraphs and runs -->
+  <xsl:param name="captureFormatOverrides" as="xs:boolean" select="false()"/>
+  
   <!-- Ensure that the root topic name has a value. -->
   <xsl:variable name="finalRootTopicName" as="xs:string"
        select="if ($rootTopicName)
@@ -417,7 +420,7 @@ version="3.0">
     </xsl:variable>    
     <xsl:variable
       name="tempDoc"
-      select="relpath:newFile($outputDir, 'simpleWpDoc.xml')"
+      select="relpath:newFile($outputDir, '1_simpleWpDoc.xml')"
       as="xs:string"/>
     <!-- NOTE: do not set this check to true(): it will fail when run within RSuite -->
     <xsl:if
@@ -445,7 +448,7 @@ version="3.0">
       test="$doSaveIntermediateDocs">
     <xsl:variable
       name="tempDocLevelFixup"
-      select="relpath:newFile($outputDir, 'simpleWpDocLevelFixup.xml')"
+      select="relpath:newFile($outputDir, '2_simpleWpDocLevelFixup.xml')"
       as="xs:string"/>
       <xsl:result-document format="indented"
         href="{$tempDocLevelFixup}">
@@ -482,7 +485,7 @@ version="3.0">
       test="$doSaveIntermediateDocs">
     <xsl:variable
       name="tempDocMathTypeFixup"
-      select="relpath:newFile($outputDir, 'simpleWpDocMathTypeFixup.xml')"
+      select="relpath:newFile($outputDir, '3_simpleWpDocMathTypeFixup.xml')"
       as="xs:string"/>
       <xsl:result-document format="indented"
         href="{$tempDocMathTypeFixup}">
@@ -511,7 +514,7 @@ version="3.0">
       test="$doSaveIntermediateDocs">
       <xsl:variable
         name="tempDocFixup"
-        select="relpath:newFile($outputDir, 'simpleWpDocFixup.xml')"
+        select="relpath:newFile($outputDir, '4_simpleWpDocFixup.xml')"
         as="xs:string"/>
       <xsl:result-document format="indented"
         href="{$tempDocFixup}">
@@ -533,7 +536,7 @@ version="3.0">
       test="$doSaveIntermediateDocs">
       <xsl:variable
         name="tempDocFixup"
-        select="relpath:newFile($outputDir, 'simpleWpWithLevels.xml')"
+        select="relpath:newFile($outputDir, '5_simpleWpWithLevels.xml')"
         as="xs:string"/>
       <xsl:result-document format="indented"
         href="{$tempDocFixup}">
@@ -592,6 +595,7 @@ version="3.0">
       + chartsAsTables  = "<xsl:sequence select="$chartsAsTablesBoolean"/>"  
       + saveIntermediateDocs  = "<xsl:sequence select="$saveIntermediateDocs"/>"
       + tableWidthsProportional = "<xsl:sequence select="$tableWidthsProportional"/>" (<xsl:value-of select="$tableWidthsProportionalBoolean"/>)
+      + captureFormatOverrides  = "<xsl:sequence select="$captureFormatOverrides"/>"  
       
       Global Variables:
       

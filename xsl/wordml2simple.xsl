@@ -25,7 +25,6 @@
       xmlns:relpath="http://dita2indesign/functions/relpath"
       xmlns:map="http://www.w3.org/2005/xpath-functions/map"
       xmlns="http://reallysi.com/namespaces/generic-wordprocessing-xml"
-      
       exclude-result-prefixes="a c pic xs mv mo ve o r m v w10 w wne wp local relpath saxon map"
       version="3.0">
   
@@ -33,7 +32,7 @@
       MS Office 2007 Office Open XML to generic
       XML transform.
       
-      Copyright (c) 2009, 2020 DITA For Publishers
+      Copyright (c) 2009, 2021 DITA For Publishers
       
       This transform is a generic transform that produces a simplified
       form of generic XML from Office Open XML.
@@ -52,6 +51,7 @@
  -->
   
   <xsl:import href="modeHandleComplexField.xsl"/>
+  <xsl:import href="getFormatOverrides.xsl"/>
   
   <xd:doc xmlns:xd="http://www.oxygenxml.com/ns/doc/xsl">
     <xd:desc>
@@ -185,7 +185,7 @@
     </xsl:if>
     <xsl:variable name="styleData" as="element()">
       <xsl:choose>
-        <xsl:when test="$styleMap">          
+        <xsl:when test="$styleMap">
           <xsl:sequence select="$styleMap"/>
         </xsl:when>
         <xsl:when test="not($styleMap) and $specifiedStyleId = '' and normalize-space(.) = ''">
@@ -235,6 +235,7 @@
         </xsl:otherwise>
       </xsl:choose>      
     </xsl:variable>
+     
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] match on w:p: structureType = "<xsl:sequence select="string($styleData/@structureType)"/>"</xsl:message>
     </xsl:if>
@@ -254,7 +255,7 @@
       </xsl:otherwise>
     </xsl:choose>
   </xsl:when>
-  <xsl:otherwise>
+    <xsl:otherwise>
       <xsl:if test="$doDebug">
         <xsl:message> + [DEBUG] match on w:p: Paragraph not skipped, calling handlePara. p=<xsl:sequence select="substring(string(./w:r[1]), 0, 40)"/></xsl:message>
       </xsl:if>
@@ -263,7 +264,7 @@
         <xsl:with-param name="styleData" select="$styleData" as="element()"/>
       </xsl:call-template>  
     </xsl:otherwise>
-</xsl:choose>  
+  </xsl:choose>  
 </xsl:template>
   
   <xsl:template name="handlePara">
@@ -296,18 +297,18 @@
       <xsl:if test="$doDebug">
         <xsl:message> + [DEBUG] handlePara: styleData=<xsl:sequence select="$styleData"/></xsl:message>
       </xsl:if>
+      <!-- Issue 74: Capture format overrides: -->
+      <xsl:apply-templates mode="get-format-overrides" select="."/>        
       <xsl:sequence select="$styleData/stylemap:*"/>
       <xsl:if test="$doDebug">        
         <xsl:message> + [DEBUG] handlePara: p="<xsl:sequence select="substring(normalize-space(.), 1, 40)"/>"</xsl:message>
       </xsl:if>
       <!-- Issue 52: Refactored to -->
       <xsl:call-template name="handleRunLevelElements">
-        <xsl:with-param name="elements" as="element()*" select="*"/>
+        <xsl:with-param name="elements" as="element()*" select="* except (w:pPr, w:proofErr)"/>
       </xsl:call-template>      
     </p>
   </xsl:template>
-  
-  
   
   <!-- 
     
@@ -344,8 +345,9 @@
     <xsl:for-each-group 
       select="$elements" 
       group-adjacent="local:getRunGroupingKey(.)">
-      <xsl:if test="$doDebug">
-        <xsl:message> + [DEBUG] handleRunLevelElements: current-group()[1]=<xsl:sequence select="current-group()[1]"/></xsl:message>
+      <xsl:if test="$doDebug or false()">
+        <xsl:message expand-text="yes"> + [DEBUG] handleRunLevelElements: current-grouping-key="{current-grouping-key()}"</xsl:message>
+<!--        <xsl:message> + [DEBUG] handleRunLevelElements: current-group()[1]=<xsl:sequence select="current-group()[1]"/></xsl:message>-->
       </xsl:if>
       <xsl:choose>
         <xsl:when test="current-group()[1][self::w:r/w:endnoteReference]">
@@ -506,9 +508,9 @@
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="runSequence" as="element()*"/>
     <xsl:param name="stylesDoc" as="document-node()" tunnel="yes"/>
-    <xsl:variable name="doDebug" as="xs:boolean" select="exists($runSequence[1][self::w:hyperlink]) or true()"/>
+    <xsl:variable name="doDebug" as="xs:boolean" select="exists($runSequence[1][self::w:hyperlink]) or false()"/>
     
-    <xsl:if test="$doDebug">
+    <xsl:if test="$doDebug and false()">
       <xsl:message> + [DEBUG] handleRunSequence: runSequence=<xsl:sequence select="$runSequence"/></xsl:message>
     </xsl:if>
 
@@ -571,6 +573,8 @@
           <xsl:if test="$runStyleMap">
             <xsl:sequence select="$runStyleMap/@*, $runStyleMap/stylemap:additionalAttributes"/>
           </xsl:if>
+          <!-- Issue 74: Capture format overrides: -->
+          <xsl:apply-templates mode="get-format-overrides" select="."/>        
           <xsl:if test="$doDebug">
             <xsl:message> + [DEBUG] handleRunSequence: Applying templates to run sequence...</xsl:message>
           </xsl:if>
@@ -1766,6 +1770,7 @@
       select="$context/preceding-sibling::w:r[. &gt;&gt; $precedingFieldStart][w:fldChar[@w:fldCharType eq 'end']][1]"
     />
     <xsl:variable name="isInComplexField" as="xs:boolean" select="exists($precedingFieldStart) and empty($precedingFieldEnd)"/>
+    <xsl:variable name="formatOverrideString" as="xs:string?" select="local:getFormatOverrideString($context)"/>
     <xsl:variable name="result" as="xs:string"
       select="
       if (exists($context/w:endnoteReference))
@@ -1777,10 +1782,31 @@
               )
       then 'complexField'
       else if ($context/self::w:r)
-      then concat(local-name($context), local:getRunStyleId($context))
+      then string-join((local-name($context), local:getRunStyleId($context), $formatOverrideString), '')
       else local-name($context)
       "
     />
     <xsl:sequence select="$result"/>
+  </xsl:function>
+
+  <!-- Constructs a string from any format override. The string
+       will be the same for the same combination of format
+       values, so two elements with the same styling will 
+       produce the same string.
+    -->
+  <xsl:function name="local:getFormatOverrideString" as="xs:string?">
+    <xsl:param name="context" as="element()"/>
+    <xsl:variable name="formatOverrides" as="element()?">
+      <xsl:apply-templates select="$context" mode="get-format-overrides"/>
+    </xsl:variable>
+    <xsl:variable name="result" as="xs:string?"
+      select="
+      let $tokens := 
+      for $override in $formatOverrides/*
+      return ($override/@name, $override/@value)
+      return string-join(sort($tokens), '')
+      "
+    />
+    <xsl:sequence select="$result"/>        
   </xsl:function>
 </xsl:stylesheet>
