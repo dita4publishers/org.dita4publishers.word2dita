@@ -1807,6 +1807,6 @@
       return string-join(sort($tokens), '')
       "
     />
-    <xsl:sequence select="$result"/>
+    <xsl:sequence select="$result"/>        
   </xsl:function>
 </xsl:stylesheet>

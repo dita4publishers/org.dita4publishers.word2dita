@@ -46,11 +46,15 @@
   />
   
   <xsl:template mode="get-format-overrides" match="w:p">
-    <xsl:apply-templates select="w:pPr" mode="#current"/>
+    <xsl:if test="$captureFormatOverrides">
+      <xsl:apply-templates select="w:pPr" mode="#current"/>      
+    </xsl:if>
   </xsl:template>
   
-  <xsl:template mode="get-format-overrides" match="w:run">
-    <xsl:apply-templates select="w:rPr" mode="#current"/>
+  <xsl:template mode="get-format-overrides" match="w:r">
+    <xsl:if test="$captureFormatOverrides">
+      <xsl:apply-templates select="w:rPr" mode="#current"/>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template mode="get-format-overrides" match="w:pPr | w:rPr">

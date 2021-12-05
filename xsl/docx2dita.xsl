@@ -131,6 +131,9 @@ version="3.0">
     select="$debugBoolean or matches($saveIntermediateDocs, 'true|yes|1|on', 'i')"
   />  
   
+  <!-- When true, capture format overrides for paragraphs and runs -->
+  <xsl:param name="captureFormatOverrides" as="xs:boolean" select="false()"/>
+  
   <!-- Ensure that the root topic name has a value. -->
   <xsl:variable name="finalRootTopicName" as="xs:string"
        select="if ($rootTopicName)
@@ -592,6 +595,7 @@ version="3.0">
       + chartsAsTables  = "<xsl:sequence select="$chartsAsTablesBoolean"/>"  
       + saveIntermediateDocs  = "<xsl:sequence select="$saveIntermediateDocs"/>"
       + tableWidthsProportional = "<xsl:sequence select="$tableWidthsProportional"/>" (<xsl:value-of select="$tableWidthsProportionalBoolean"/>)
+      + captureFormatOverrides  = "<xsl:sequence select="$captureFormatOverrides"/>"  
       
       Global Variables:
       
