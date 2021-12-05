@@ -49,7 +49,11 @@
     <xsl:apply-templates select="w:pPr" mode="#current"/>
   </xsl:template>
   
-  <xsl:template mode="get-format-overrides" match="w:pPr">
+  <xsl:template mode="get-format-overrides" match="w:run">
+    <xsl:apply-templates select="w:rPr" mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template mode="get-format-overrides" match="w:pPr | w:rPr">
     <formatOverrides>
       <xsl:apply-templates mode="#current"/>
     </formatOverrides>

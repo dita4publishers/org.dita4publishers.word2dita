@@ -1267,7 +1267,9 @@
     <xsl:variable name="directResult" as="node()*">
       <xsl:element name="{$tagName}">
         <xsl:call-template name="generateXtrcAtt"/>
-        <xsl:sequence select="@outputclass"/>
+        <xsl:apply-templates select="." mode="constructOutputclass">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() and exists(rsiwp:formatOverrides/*)"/>
+        </xsl:apply-templates>        
         <xsl:if test="@langAttValue != ''">
           <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
         </xsl:if>

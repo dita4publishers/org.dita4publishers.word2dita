@@ -55,7 +55,20 @@
     <xsl:variable name="baseStyle" as="xs:string?">
       <xsl:apply-templates select="$context" mode="local:getRunStyleId"/>
     </xsl:variable>
-    <xsl:sequence select="($baseStyle, '')[1]"/>
+    <xsl:variable name="formatOverrideString" as="xs:string?" select="local:getFormatOverrideString($context)"/>
+    <xsl:variable name="candStyle" as="xs:string?"
+      select="
+      if (exists($baseStyle) and $baseStyle ne '')
+      then $baseStyle
+      else if (exists($formatOverrideString) and $formatOverrideString ne '')
+      then 'FormattedRun'
+      else ()
+      "
+    />
+    <xsl:variable name="result" as="xs:string"
+      select="($candStyle, '')[1]"
+    />
+    <xsl:sequence select="$result"/>
   </xsl:function>
   
   <xsl:template mode="local:getRunStyleId" match="w:rPr/w:rStyle" as="xs:string">
