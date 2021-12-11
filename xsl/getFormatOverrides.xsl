@@ -40,6 +40,8 @@
       
       Adds local format overrides to simple wordprocessing markup.
       
+      Issue 79: Module created
+      
       =========================================== -->
 
   <xsl:mode name="get-format-overrides"
@@ -57,7 +59,8 @@
     </xsl:if>
   </xsl:template>
   
-  <xsl:template mode="get-format-overrides" match="w:pPr | w:rPr">
+  <!-- NOTE: Don't process w:rPr that may be within w:pPr -->
+  <xsl:template mode="get-format-overrides" match="w:pPr | w:r/w:rPr">
     <formatOverrides>
       <xsl:apply-templates mode="#current"/>
     </formatOverrides>
@@ -67,7 +70,7 @@
         <w:ind w:left="432"/>
         <w:jc w:val="center"/>
         <w:rPr>
-          <w:b/>
+          <w:b/>0
           <w:bCs/>
           <w:i/>
           <w:iCs/>
@@ -117,13 +120,25 @@
     />
   </xsl:template>
 
+
+  <xsl:template mode="get-format-overrides" 
+    match="w:color"
+    >
+    
+    <!--    <xsl:message>+ [DEBUG] get-format-overrides: Handling {name(..)}/{name(.)}...</xsl:message>-->
+    
+    <formatProperty name="color"
+      value="{@w:val}"
+      datatype="color"
+    />
+  </xsl:template>
+  
   <xsl:template mode="get-format-overrides" 
     match="w:jc"
     >
     
 <!--    <xsl:message>+ [DEBUG] get-format-overrides: Handling {name(..)}/{name(.)}...</xsl:message>-->
     
-    <!-- Convert 100ths of character with to character width -->
     <formatProperty name="justification"
       value="{@w:val}"
       datatype="enum"
