@@ -610,7 +610,7 @@
   <xsl:template match="rsiwp:p" name="transformPara">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
-    <xsl:if test="$doDebug">
+    <xsl:if test="$doDebug and true()">
       <xsl:message> + [DEBUG] rsiwp:p (transformPara): text=<xsl:sequence select="substring(., 1, 40)"/></xsl:message>
     </xsl:if>
     <xsl:variable name="tagName" as="xs:string"
@@ -647,8 +647,11 @@
           <xsl:apply-templates select="rsiwp:bookmarkStart" mode="generate-para-ids">
             <xsl:with-param name="tagName" select="$tagName"/>
           </xsl:apply-templates>
-          <xsl:apply-templates select="." mode="constructOutputclass">
+<!--          <xsl:apply-templates select="." mode="constructOutputclass">
             <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() and exists(rsiwp:formatOverrides/*)"/>
+          </xsl:apply-templates>
+-->          <xsl:apply-templates select="." mode="setBaseAttribute">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() or $putFormatOverridesInBaseAtt"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="@dataName, @typeAttValue"/>
           <xsl:apply-templates select="." mode="generate-id">
@@ -666,7 +669,75 @@
       </xsl:otherwise>
     </xsl:choose>    
   </xsl:template>
+  
+  <!-- Issue 82: Capture the style name in the @base attribute. Also enables other @base-setting logic. -->
+  <xsl:template mode="setBaseAttribute" as="attribute()*" match="*">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] setBaseAttribute - {name(..)}/{name(.)}: Constructing base attribute value...</xsl:message>      
+    </xsl:if>
+    
+    <xsl:variable name="contributions" as="xs:string*">
+      <xsl:apply-templates mode="constructBaseAttributeValues" select=".">
+        <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    
+    <xsl:if test="exists($contributions)">
+      <xsl:attribute name="base" select="string-join($contributions, ' ')"/>
+    </xsl:if>
+    
+  </xsl:template>
+  
+  <xsl:template mode="constructBaseAttributeValues" match="rsiwp:p | rsiwp:run | rsiwp:table" as="xs:string*">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug or true()">
+      <xsl:message>+ [DEBUG] constructBaseAttributeValues - {name(..)}/{name(.)}: Applying templates to attributes and formatOverrides...</xsl:message>      
+    </xsl:if>
+    <xsl:apply-templates select="@*, rsiwp:formatOverrides" mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template mode="constructBaseAttributeValues" match="@styleName" as="xs:string*">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] constructBaseAttributeValues: @styleName="{.}", returning "{concat('style(', string-join(tokenize(., ' '), '_'), ')')}"</xsl:message>      
+    </xsl:if>
+    <xsl:if test="$putStyleNameInBaseAtt">
+      <xsl:sequence select="concat('style(', string-join(tokenize(., ' '), '_'), ')')"/>
+    </xsl:if>
+  </xsl:template>
+  
+  <xsl:template mode="constructBaseAttributeValues" match="rsiwp:formatOverrides" as="xs:string*">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
 
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] constructBaseAttributeValues: {name(..)}/{name(.)}: Starting</xsl:message>      
+    </xsl:if>
+
+    <xsl:if test="$putFormatOverridesInBaseAtt">
+      <xsl:if test="$doDebug">
+        <xsl:message>+ [DEBUG] constructBaseAttributeValues: {name(..)}/{name(.)}:    Applying templates in mode constructBaseAttributeValues...</xsl:message>      
+      </xsl:if>
+      <xsl:apply-templates mode="#current" select="*"/>
+    </xsl:if>
+  </xsl:template>
+  
+  <xsl:template mode="constructBaseAttributeValues" match="rsiwp:formatOverrides/rsiwp:*" as="xs:string*">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] constructBaseAttributeValues - {name(../..)}/{name(..)}/{name(.)}: Constructing result "{concat(@name, '(', string-join(tokenize(@value, ' '), '_'), ')')}" </xsl:message>
+    </xsl:if>
+    <xsl:sequence select="concat(@name, '(', string-join(tokenize(@value, ' '), '_'), ')')"/>
+  </xsl:template>
+  
+  <xsl:template mode="constructBaseAttributeValues" match="text() | @*" priority="-1" as="xs:string*">
+    <!-- Suppress -->
+  </xsl:template>
+
+  <xsl:template mode="constructBaseAttributeValues" match="*" priority="-1" as="xs:string*">
+    <xsl:apply-templates mode="#current"/>
+  </xsl:template>
+  
   <!-- Construct @outputclass value, reflecting any explicit @outputclass and format overrides -->
   <xsl:template mode="constructOutputclass" match="*" priority="-1" as="attribute()?">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
@@ -674,10 +745,7 @@
       <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: Constructing outputclass value...</xsl:message>
     </xsl:if>
     <xsl:variable name="tokens" as="xs:string*">
-      <xsl:apply-templates mode="#current" select="@outputclass, rsiwp:formatOverrides"/>
-      <xsl:if test="$putStyleNameInOutputclass and exists(@styleName)">
-        <xsl:sequence select="string-join(tokenize(@styleName, ' '), '_')"/>
-      </xsl:if>
+      <xsl:apply-templates mode="#current" select="@outputclass, @styleName, rsiwp:formatOverrides"/>
     </xsl:variable>
     <xsl:if test="$doDebug">
       <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: tokens: {$tokens}</xsl:message>
@@ -690,12 +758,21 @@
     </xsl:if>
   </xsl:template>
   
+  <xsl:template mode="constructOutputclass" match="@styleName">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:if test="$putStyleNameInOutputclass">
+      <xsl:sequence select="string-join(tokenize(., ' '), '_')"/>
+    </xsl:if>    
+  </xsl:template>
+  
   <xsl:template mode="constructOutputclass" match="rsiwp:formatOverrides" as="xs:string*">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:if test="$doDebug">
-      <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: Applying templates to children</xsl:message>
+    <xsl:if test="$putFormatOverridesInOutputclass">
+      <xsl:if test="$doDebug">
+        <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: Applying templates to children</xsl:message>
+      </xsl:if>
+      <xsl:apply-templates mode="#current" select="*"/>
     </xsl:if>
-    <xsl:apply-templates mode="#current" select="*"/>
   </xsl:template>
   
   <xsl:template mode="constructOutputclass" match="rsiwp:formatOverrides/rsiwp:*" as="xs:string*">
@@ -703,9 +780,7 @@
     <xsl:if test="$doDebug">
       <xsl:message>+ [DEBUG] constructOutputclass - {name(..)}/{name(.)}: Constructing result "{concat(@name, '-', @value)}" </xsl:message>
     </xsl:if>
-    <xsl:if test="exists(@name) and exists(@value)">
-      <xsl:sequence select="concat(@name, '_', @value)"/>
-    </xsl:if>
+    <xsl:sequence select="concat(@name, '_', @value)"/>
   </xsl:template>
   
   <xsl:template mode="constructOutputclass" match="@outputclass" as="xs:string*">
@@ -1272,9 +1347,12 @@
     <xsl:variable name="directResult" as="node()*">
       <xsl:element name="{$tagName}">
         <xsl:call-template name="generateXtrcAtt"/>
-        <xsl:apply-templates select="." mode="constructOutputclass">
+<!--        <xsl:apply-templates select="." mode="constructOutputclass">
           <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() and exists(rsiwp:formatOverrides/*)"/>
         </xsl:apply-templates>        
+-->        <xsl:apply-templates select="." mode="setBaseAttribute">
+          <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() and ($putStyleNameInBaseAtt or $putFormatOverridesInBaseAtt)"/>
+        </xsl:apply-templates>
         <xsl:if test="@langAttValue != ''">
           <xsl:attribute name="xml:lang" select="string(@langAttValue)"/>
         </xsl:if>
