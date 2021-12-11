@@ -14,7 +14,7 @@
   <!--==========================================
     Simple Word Processing Markup to DITA generic transformation
     
-    Copyright (c) 2009, 2016 DITA For Publishers, Inc.
+    Copyright (c) 2009, 2021 DITA For Publishers, Inc.
 
     Transforms a simple word processing document into DITA maps and
     topics using a style-to-tag mapping.
@@ -692,7 +692,7 @@
     <xsl:if test="$doDebug">
       <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: Applying templates to children</xsl:message>
     </xsl:if>
-    <xsl:apply-templates mode="#current" select="element()"/>
+    <xsl:apply-templates mode="#current" select="*"/>
   </xsl:template>
   
   <xsl:template mode="constructOutputclass" match="rsiwp:formatOverrides/rsiwp:*" as="xs:string*">
@@ -700,7 +700,9 @@
     <xsl:if test="$doDebug">
       <xsl:message>+ [DEBUG] constructOutputclass - {name(..)}/{name(.)}: Constructing result "{concat(@name, '-', @value)}" </xsl:message>
     </xsl:if>
-    <xsl:sequence select="concat(@name, '_', @value)"/>
+    <xsl:if test="exists(@name) and exists(@value)">
+      <xsl:sequence select="concat(@name, '_', @value)"/>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template mode="constructOutputclass" match="@outputclass" as="xs:string*">

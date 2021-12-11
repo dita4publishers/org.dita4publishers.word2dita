@@ -28,7 +28,7 @@ version="3.0">
   <!--==========================================
     DOCX to DITA generic transformation
     
-    Copyright (c) 2009, 2012 DITA For Publishers, Inc.
+    Copyright (c) 2009, 2021 DITA For Publishers, Inc.
 
     Transforms a DOCX document.xml file into a DITA topic using
     a style-to-tag mapping.
@@ -131,7 +131,7 @@ version="3.0">
     select="$debugBoolean or matches($saveIntermediateDocs, 'true|yes|1|on', 'i')"
   />  
   
-  <!-- When true, capture format overrides for paragraphs and runs -->
+  <!-- Issue 79: When true, capture format overrides for paragraphs and runs -->
   <xsl:param name="captureFormatOverrides" as="xs:boolean" select="false()"/>
   
   <!-- Ensure that the root topic name has a value. -->
