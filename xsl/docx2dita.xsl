@@ -133,6 +133,9 @@ version="3.0">
   
   <!-- Issue 79: When true, capture format overrides for paragraphs and runs -->
   <xsl:param name="captureFormatOverrides" as="xs:boolean" select="false()"/>
+
+  <!-- Issue 82: When true, include the the Word style name in @outputclass -->
+  <xsl:param name="putStyleNameInOutputclass" as="xs:boolean" select="false()"/>
   
   <!-- Ensure that the root topic name has a value. -->
   <xsl:variable name="finalRootTopicName" as="xs:string"
@@ -596,6 +599,7 @@ version="3.0">
       + saveIntermediateDocs  = "<xsl:sequence select="$saveIntermediateDocs"/>"
       + tableWidthsProportional = "<xsl:sequence select="$tableWidthsProportional"/>" (<xsl:value-of select="$tableWidthsProportionalBoolean"/>)
       + captureFormatOverrides  = "<xsl:sequence select="$captureFormatOverrides"/>"  
+      + putStyleNameInOutputclass  = "<xsl:sequence select="$putStyleNameInOutputclass"/>"  
       
       Global Variables:
       

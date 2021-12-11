@@ -241,6 +241,8 @@
 			<param name="ditaVersion" expression="${w2d.dita.version}" if="w2d.ditaversion"/>
 		  <!-- Issue 79: Make capture of format overrides switchable -->
 		  <param name="captureFormatOverrides" expression="${w2d.capture.format.overrides}" if="w2d.capture.format.overrides"/>
+		  <!-- Issue 82: Make putStyleNameInOutputclass switchable -->
+		  <param name="putStyleNameInOutputclass" expression="${w2d.put.style.name.in.outputclass}" if="w2d.put.style.name.in.outputclass"/>
 		  <xmlcatalog refid="dita.catalog"></xmlcatalog>
 		</xslt>
 		<echo>[INFO] Transform complete</echo>
