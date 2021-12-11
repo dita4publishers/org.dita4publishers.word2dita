@@ -675,6 +675,9 @@
     </xsl:if>
     <xsl:variable name="tokens" as="xs:string*">
       <xsl:apply-templates mode="#current" select="@outputclass, rsiwp:formatOverrides"/>
+      <xsl:if test="$putStyleNameInOutputclass and exists(@styleName)">
+        <xsl:sequence select="string-join(tokenize(@styleName, ' '), '_')"/>
+      </xsl:if>
     </xsl:variable>
     <xsl:if test="$doDebug">
       <xsl:message>+ [DEBUG] constructOutputclass - {name(.)}: tokens: {$tokens}</xsl:message>
