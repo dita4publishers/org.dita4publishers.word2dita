@@ -610,7 +610,7 @@
   <xsl:template match="rsiwp:p" name="transformPara">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:variable name="doDebug" as="xs:boolean" select="false()"/>
-    <xsl:if test="$doDebug and true()">
+    <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] rsiwp:p (transformPara): text=<xsl:sequence select="substring(., 1, 40)"/></xsl:message>
     </xsl:if>
     <xsl:variable name="tagName" as="xs:string"
@@ -647,11 +647,11 @@
           <xsl:apply-templates select="rsiwp:bookmarkStart" mode="generate-para-ids">
             <xsl:with-param name="tagName" select="$tagName"/>
           </xsl:apply-templates>
-<!--          <xsl:apply-templates select="." mode="constructOutputclass">
+          <xsl:apply-templates select="." mode="constructOutputclass">
             <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() and exists(rsiwp:formatOverrides/*)"/>
           </xsl:apply-templates>
--->          <xsl:apply-templates select="." mode="setBaseAttribute">
-            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() or $putFormatOverridesInBaseAtt"/>
+          <xsl:apply-templates select="." mode="setBaseAttribute">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() and ($putFormatOverridesInBaseAtt or $putStyleNameInBaseAtt)"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="@dataName, @typeAttValue"/>
           <xsl:apply-templates select="." mode="generate-id">
@@ -691,7 +691,7 @@
   
   <xsl:template mode="constructBaseAttributeValues" match="rsiwp:p | rsiwp:run | rsiwp:table" as="xs:string*">
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
-    <xsl:if test="$doDebug or true()">
+    <xsl:if test="$doDebug">
       <xsl:message>+ [DEBUG] constructBaseAttributeValues - {name(..)}/{name(.)}: Applying templates to attributes and formatOverrides...</xsl:message>      
     </xsl:if>
     <xsl:apply-templates select="@*, rsiwp:formatOverrides" mode="#current"/>
@@ -1347,10 +1347,10 @@
     <xsl:variable name="directResult" as="node()*">
       <xsl:element name="{$tagName}">
         <xsl:call-template name="generateXtrcAtt"/>
-<!--        <xsl:apply-templates select="." mode="constructOutputclass">
+        <xsl:apply-templates select="." mode="constructOutputclass">
           <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() and exists(rsiwp:formatOverrides/*)"/>
         </xsl:apply-templates>        
--->        <xsl:apply-templates select="." mode="setBaseAttribute">
+        <xsl:apply-templates select="." mode="setBaseAttribute">
           <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="false() and ($putStyleNameInBaseAtt or $putFormatOverridesInBaseAtt)"/>
         </xsl:apply-templates>
         <xsl:if test="@langAttValue != ''">
