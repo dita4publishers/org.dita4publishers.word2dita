@@ -131,11 +131,17 @@ version="3.0">
     select="$debugBoolean or matches($saveIntermediateDocs, 'true|yes|1|on', 'i')"
   />  
   
+  <!-- Issue 82: When true, include the the format overridesin @base -->
+  <xsl:param name="putFormatOverridesInOutputclass" as="xs:boolean" select="false()"/>
+  <!-- Issue 82: When true, include the the format overridesin @base -->
+  <xsl:param name="putFormatOverridesInBaseAtt" as="xs:boolean" select="false()"/>
   <!-- Issue 79: When true, capture format overrides for paragraphs and runs -->
-  <xsl:param name="captureFormatOverrides" as="xs:boolean" select="false()"/>
-
+  <xsl:variable name="captureFormatOverrides" as="xs:boolean" select="$putFormatOverridesInBaseAtt or $putFormatOverridesInOutputclass"/>
+  
   <!-- Issue 82: When true, include the the Word style name in @outputclass -->
   <xsl:param name="putStyleNameInOutputclass" as="xs:boolean" select="false()"/>
+  <!-- Issue 82: When true, include the the Word style name in @base -->
+  <xsl:param name="putStyleNameInBaseAtt" as="xs:boolean" select="false()"/>
   
   <!-- Ensure that the root topic name has a value. -->
   <xsl:variable name="finalRootTopicName" as="xs:string"
@@ -599,8 +605,11 @@ version="3.0">
       + saveIntermediateDocs  = "<xsl:sequence select="$saveIntermediateDocs"/>"
       + tableWidthsProportional = "<xsl:sequence select="$tableWidthsProportional"/>" (<xsl:value-of select="$tableWidthsProportionalBoolean"/>)
       + captureFormatOverrides  = "<xsl:sequence select="$captureFormatOverrides"/>"  
+      + putFormatOverridesInOutputclass  = "<xsl:sequence select="$putFormatOverridesInOutputclass"/>"  
+      + putFormatOverridesInBaseAtt  = "<xsl:sequence select="$putFormatOverridesInBaseAtt"/>"  
       + putStyleNameInOutputclass  = "<xsl:sequence select="$putStyleNameInOutputclass"/>"  
-      
+      + putStyleNameInBaseAtt      = "<xsl:sequence select="$putStyleNameInBaseAtt"/>"  
+
       Global Variables:
       
       + platform         = "<xsl:sequence select="$platform"/>"
