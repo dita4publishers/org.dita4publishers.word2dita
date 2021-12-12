@@ -165,6 +165,52 @@
     />
   </xsl:template>
   
+  <xsl:template mode="get-format-overrides" match="w:vertAlign">
+    <formatProperty name="valign"
+      value="{@w:val}"
+      datatype="enum"
+    />
+  </xsl:template>
+  
+  <!-- Expand/compress -->
+  <xsl:template mode="get-format-overrides" match="w:w">
+    <formatProperty name="characterspacing"
+      value="{@w:val}"
+      datatype="percentage"
+    />
+  </xsl:template>
+  
+  <xsl:template mode="get-format-overrides" match="w:u">
+    <xsl:apply-templates mode="#current" select="@*"/>
+  </xsl:template>
+  
+  <xsl:template mode="get-format-overrides" match="w:u/@w:val" priority="10">
+    <formatProperty name="underlineStyle"
+      value="{.}"
+      datatype="enum"
+    />
+  </xsl:template>
+  
+  <xsl:template mode="get-format-overrides" match="w:u/@w:*">
+    <xsl:variable name="propertyName" as="xs:string"
+      select="upper-case(substring(local-name(.), 1,1)) || substring(local-name(.), 2)"
+    />
+    <formatProperty name="underline{$propertyName}"
+      value="{.}"
+      datatype="color"
+    />
+  </xsl:template>
+  
+  
+  
+  <!-- Style specs that are just flags, i.e., w:strike -->
+  <xsl:template mode="get-format-overrides" match="w:strike | w:vanish">
+    <formatProperty name="{local-name(.)}"
+      value="true"
+      datatype="toggle"
+    />
+  </xsl:template>
+  
   <xsl:template mode="get-format-overrides" match="w:framePr">
     <xsl:apply-templates mode="#current" select="@*"/>
   </xsl:template>
