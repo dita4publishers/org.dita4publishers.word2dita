@@ -240,7 +240,7 @@
       <xsl:message> + [DEBUG] match on w:p: structureType = "<xsl:sequence select="string($styleData/@structureType)"/>"</xsl:message>
     </xsl:if>
 <xsl:choose>    
-  <xsl:when test="string($styleData/@structureType) = 'skip'">
+  <xsl:when test="local:isSkippedPara(., $styleData)">
     <xsl:if test="$doDebug">
       <xsl:message> + [DEBUG] skipping paragraph with @structureType "<xsl:value-of select="$styleData/@structureType"/>"</xsl:message>
     </xsl:if>
@@ -1809,4 +1809,28 @@
     />
     <xsl:sequence select="$result"/>        
   </xsl:function>
+  
+  <!--
+    Determine if paragraph is one that should be skipped.
+    
+    @param context Paragraph to check
+    @param styleData Style data for the paragraph
+    @return True if the paragraph should be skipped (i.e., structureType="skip")
+    -->
+  <xsl:function name="local:isSkippedPara" as="xs:boolean">
+    <xsl:param name="context" as="element()"/>
+    <xsl:param name="styleData" as="element()?"/>
+    
+    <xsl:variable name="result" as="xs:boolean">
+      <xsl:apply-templates select="$context" mode="local:isSkippedPara">
+        <xsl:with-param name="styleData" as="element()?" tunnel="yes" select="$styleData"/>
+      </xsl:apply-templates>
+    </xsl:variable>
+    <xsl:sequence select="$result"/>
+  </xsl:function>
+  
+  <xsl:template mode="local:isSkippedPara" match="*" priority="-1" as="xs:boolean">
+    <xsl:param name="styleData" as="element()?" tunnel="yes" select="()"/>
+    <xsl:sequence select="string($styleData/@structureType) = ('skip') "/>
+  </xsl:template>
 </xsl:stylesheet>
