@@ -79,48 +79,57 @@
       -->
   </xsl:template>
   
+  <!-- Formatting controls where the tagname and value are all we need: -->
   <xsl:template mode="get-format-overrides" 
-    match="w:ind">
-    <xsl:apply-templates select="@*" mode="#current"/>
-  </xsl:template>
-  
-  <xsl:template mode="get-format-overrides"
     match="
-    w:ind/@w:end | 
-    w:ind/@w:firstLine | 
-    w:ind/@w:hanging | 
-    w:ind/@w:left | 
-    w:ind/@w:start">
+    w:effect |
+    w:highlight |
+    w:pageBreakBefore |
+    w:textAlignment |
+    w:textDirection |
+    w:wordWrap
+    ">
+    <formatProperty name="{local-name(.)}"
+      value="{@w:val}"
+    />
+  </xsl:template>
 
-<!--    <xsl:message>+ [DEBUG] get-format-overrides: Handling {name(..)}/@{name(.)}...</xsl:message>-->
-    
-    <formatProperty name="indent-{local-name(.)}"
-      value="{number(.) div 20.0}pt"
-      datatype="pt"
+  <!-- Style specs that are just flags, i.e., w:strike -->
+  <xsl:template mode="get-format-overrides" 
+    match="
+    w:caps |
+    w:emboss |
+    w:imprint |
+    w:outline |
+    w:shadow |
+    w:smallCaps |
+    w:strike | 
+    w:vanish
+    ">
+    <formatProperty name="{local-name(.)}"
+      value="{@w:val}"
+      datatype="toggle"
     />
   </xsl:template>
   
+  <!-- w:bdr: Text border -->
   <xsl:template mode="get-format-overrides" 
-    match="
-    w:ind/@w:endChars |
-    w:ind/@w:firstLineChars |
-    w:ind/@w:hangingChars
-    "
+    match="w:bdr">
+    <formatProperty name="textborder-type"
+      value="{@w:val}"
+    />
+    <xsl:apply-templates select="@* except (@w:val)" mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template mode="get-format-overrides" 
+    match="w:bdr/@*"
     >
-
-<!--    <xsl:message>+ [DEBUG] get-format-overrides: Handling {name(..)}/@{name(.)}...</xsl:message>-->
+    <formatProperty name="textborder-{local-name(.)}"
+      value="{.}"
+    />
     
-    <xsl:variable name="rawValue" as="xs:double"
-      select="."      
-    />
-    <!-- Convert 100ths of character with to character width -->
-    <formatProperty name="indent-{local-name(.)}"
-      value="{$rawValue div 100}"
-      datatype="em"
-    />
   </xsl:template>
-
-
+  
   <xsl:template mode="get-format-overrides" 
     match="w:color"
     >
@@ -132,18 +141,118 @@
       datatype="color"
     />
   </xsl:template>
+
+  <xsl:template mode="get-format-overrides" 
+    match="w:dstrike">
+    <formatProperty name="double-strikeout"
+      value="{@w:val}"
+    />
+    <xsl:apply-templates select="@* except (@w:val)" mode="#current"/>
+  </xsl:template>
+
+  <!-- Emphasis mark -->
+  <xsl:template mode="get-format-overrides" 
+    match="w:em">
+    <formatProperty name="emphasis-mark"
+      value="{@w:val}"
+    />
+    <xsl:apply-templates select="@* except (@w:val)" mode="#current"/>
+  </xsl:template>
+  
+  <xsl:template mode="get-format-overrides"
+    match="w:fitText"
+    >
+    <!-- <w:fitText w:id="50" w:val="720" /> -->
+    <formatProperty name="fit-text"
+      value="{number(@w:val) div 20.0}pt"
+      datatype="pt"
+    />
+    <formatProperty name="fit-id"
+      value="{@w:id}"
+      datatype="ID"
+    />
+  </xsl:template>
+  
+  <xsl:template mode="get-format-overrides" 
+    match="w:ind">
+    <xsl:apply-templates select="@*" mode="#current"/>
+  </xsl:template>
+  <!-- Indention property attributes that are twips values: -->
+  <xsl:template mode="get-format-overrides"
+    match="
+    w:ind/@w:end | 
+    w:ind/@w:firstLine | 
+    w:ind/@w:hanging | 
+    w:ind/@w:left | 
+    w:ind/@w:start">
+    
+    <!--    <xsl:message>+ [DEBUG] get-format-overrides: Handling {name(..)}/@{name(.)}...</xsl:message>-->
+    
+    <formatProperty name="indent-{local-name(.)}"
+      value="{number(.) div 20.0}pt"
+      datatype="pt"
+    />
+  </xsl:template>
+  
+  <!-- Indention property attributes that are em values: -->
+  <xsl:template mode="get-format-overrides" 
+    match="
+    w:ind/@w:endChars |
+    w:ind/@w:firstLineChars |
+    w:ind/@w:hangingChars
+    "
+    >
+    
+    <!--    <xsl:message>+ [DEBUG] get-format-overrides: Handling {name(..)}/@{name(.)}...</xsl:message>-->
+    
+    <xsl:variable name="rawValue" as="xs:double"
+      select="."      
+    />
+    <!-- Convert 100ths of character with to character width -->
+    <formatProperty name="indent-{local-name(.)}"
+      value="{$rawValue div 100}"
+      datatype="em"
+    />
+  </xsl:template>
   
   <xsl:template mode="get-format-overrides" 
     match="w:jc"
     >
-    
-<!--    <xsl:message>+ [DEBUG] get-format-overrides: Handling {name(..)}/{name(.)}...</xsl:message>-->
     
     <formatProperty name="justification"
       value="{@w:val}"
       datatype="enum"
     />
   </xsl:template>
+
+  <xsl:template mode="get-format-overrides" 
+    match="w:kern"
+    >
+    
+    <formatProperty name="kerning"
+      value="{number(@w:val) div 2.0}pt"
+      datatype="pt"
+    />
+  </xsl:template>
+  
+  <!-- Ignoring w:lang for now. Not really a format override per se. -->
+  
+  <xsl:template mode="get-format-overrides" match="w:outlineLvl">
+    <formatProperty name="outlineLevel"
+      value="{@w:val}"
+      datatype="integer"
+    />
+  </xsl:template>
+
+  <xsl:template mode="get-format-overrides"
+    match="w:position"
+    >
+    <formatProperty name="fit-text"
+      value="{number(@w:val) div 2.0}pt"
+      datatype="pt"
+    />
+  </xsl:template>
+  
   
   <xsl:template mode="get-format-overrides" match="w:shd">
   <!-- 
@@ -158,13 +267,41 @@
     />
   </xsl:template>
   
-  <xsl:template mode="get-format-overrides" match="w:outlineLvl">
-    <formatProperty name="outlineLevel"
-      value="{@w:val}"
-      datatype="integer"
+  <xsl:template mode="get-format-overrides" match="w:spacing">
+    <formatProperty name="character-spacing"
+      value="{number(@w:val) div 20.0}pt"
+      datatype="enum"
     />
   </xsl:template>
   
+  <xsl:template mode="get-format-overrides" 
+    match="w:sz"
+    >
+    
+    <formatProperty name="size"
+      value="{number(@w:val) div 2.0}pt"
+      datatype="pt"
+    />
+  </xsl:template>
+    
+  <xsl:template mode="get-format-overrides" match="w:u">
+    <formatProperty name="underlineStyle"
+      value="{@w:val}"
+      datatype="enum"
+    />
+    <xsl:apply-templates mode="#current" select="@* except (@w:val)"/>
+  </xsl:template>
+  
+  <xsl:template mode="get-format-overrides" match="w:u/@w:*">
+    <xsl:variable name="propertyName" as="xs:string"
+      select="upper-case(substring(local-name(.), 1,1)) || substring(local-name(.), 2)"
+    />
+    <formatProperty name="underline{$propertyName}"
+      value="{.}"
+      datatype="color"
+    />
+  </xsl:template>
+    
   <xsl:template mode="get-format-overrides" match="w:vertAlign">
     <formatProperty name="valign"
       value="{@w:val}"
@@ -178,38 +315,7 @@
       value="{@w:val}"
       datatype="percentage"
     />
-  </xsl:template>
-  
-  <xsl:template mode="get-format-overrides" match="w:u">
-    <xsl:apply-templates mode="#current" select="@*"/>
-  </xsl:template>
-  
-  <xsl:template mode="get-format-overrides" match="w:u/@w:val" priority="10">
-    <formatProperty name="underlineStyle"
-      value="{.}"
-      datatype="enum"
-    />
-  </xsl:template>
-  
-  <xsl:template mode="get-format-overrides" match="w:u/@w:*">
-    <xsl:variable name="propertyName" as="xs:string"
-      select="upper-case(substring(local-name(.), 1,1)) || substring(local-name(.), 2)"
-    />
-    <formatProperty name="underline{$propertyName}"
-      value="{.}"
-      datatype="color"
-    />
-  </xsl:template>
-  
-  
-  
-  <!-- Style specs that are just flags, i.e., w:strike -->
-  <xsl:template mode="get-format-overrides" match="w:strike | w:vanish">
-    <formatProperty name="{local-name(.)}"
-      value="true"
-      datatype="toggle"
-    />
-  </xsl:template>
+  </xsl:template>  
   
   <xsl:template mode="get-format-overrides" match="w:framePr">
     <xsl:apply-templates mode="#current" select="@*"/>
@@ -221,19 +327,6 @@
     />
   </xsl:template>
 
-  <xsl:template mode="get-format-overrides" 
-    match="
-    w:highlight |
-    w:pageBreakBefore |
-    w:textAlignment |
-    w:textDirection |
-    w:wordWrap
-    ">
-    <formatProperty name="{local-name(.)}"
-      value="{@w:val}"
-    />
-  </xsl:template>
-  
   <xsl:template mode="get-format-overrides" match="text()">
     <!-- We never want text in this mode -->
   </xsl:template>
