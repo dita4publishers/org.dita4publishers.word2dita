@@ -58,19 +58,25 @@
     <xsl:variable name="fieldType" as="xs:string" select="."/>
 
     <xsl:variable name="instruction" as="xs:string"
-      select="normalize-space($runSequence[w:instrText][1])"
+      select="normalize-space(string-join(for $text in $runSequence/w:instrText return string($text), ' '))"
     />
     <xsl:variable name="separator" as="element()?" select="$runSequence[w:fldChar[@w:fldCharType eq 'separate']]"/>
     <xsl:variable name="end" as="element()?" select="$runSequence[w:fldChar[@w:fldCharType eq 'end']]"/>
     
     <xsl:variable name="targetID" as="xs:string" select="tokenize($instruction)[2]"/>
-    <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: Flags: /{substring-after($instruction, $targetID) => normalize-space()}/</xsl:message>
+    <xsl:if test="false()">
+      <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: Flags: /{substring-after($instruction, $targetID) => normalize-space()}/</xsl:message>
+    </xsl:if>
     <xsl:variable name="flags" as="map(*)">
       <xsl:variable name="flagTokens" as="xs:string*" select="substring-after($instruction, $targetID) => normalize-space() => tokenize('\\')"/>
-      <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: flagTokens: '{$flagTokens => string-join("', '")}'</xsl:message>
+      <xsl:if test="false()">
+        <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: flagTokens: '{$flagTokens => string-join("', '")}'</xsl:message>
+      </xsl:if>
       <xsl:map>
         <xsl:for-each select="$flagTokens[. ne '']">
-          <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: token[{position()}]="{.}"</xsl:message>
+          <xsl:if test="false()">
+            <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: token[{position()}]="{.}"</xsl:message>
+          </xsl:if>
           <xsl:variable name="tokens" as="xs:string*" select="tokenize(., '\s+')"/>
           <xsl:variable name="flagName" as="xs:string?" select="$tokens[1]"/>
           <xsl:map-entry key="$flagName"><xsl:value-of select="$tokens[position() gt 1] => string-join(' ')"/></xsl:map-entry>
