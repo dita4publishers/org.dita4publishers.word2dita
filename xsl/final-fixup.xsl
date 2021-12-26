@@ -38,7 +38,7 @@
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <xsl:if test="$doDebug">
-      <xsl:message>[DEBUG] final-fixup: Phrase where outputclass matches '^(b|i|u|sub|sup)-.+')': <xsl:sequence select="."/></xsl:message>
+      <xsl:message>[DEBUG] final-fixup: Phrase where outputclass matches '^(b|i|u|sub|sup|strike|linethrough)-.+')': <xsl:sequence select="."/></xsl:message>
     </xsl:if>
     <!-- NOTE: Attributes are put out on leaf elements only -->
     <xsl:variable name="attributes" as="attribute()*">

@@ -93,7 +93,7 @@
   </xsl:template>
   
   <xsl:template mode="local:getRunStyleId-styleTokens" match="w:strike" as="xs:string">
-    <xsl:sequence select="'line-through'"/>
+    <xsl:sequence select="'linethrough'"/>
   </xsl:template>
   
   <xsl:template mode="local:getRunStyleId-styleTokens" match="w:u" as="xs:string">

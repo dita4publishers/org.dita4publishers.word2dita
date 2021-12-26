@@ -107,7 +107,7 @@
     w:vanish
     ">
     <formatProperty name="{local-name(.)}"
-      value="{@w:val}"
+      value="true"
       datatype="toggle"
     />
   </xsl:template>
