@@ -347,6 +347,8 @@
       group-adjacent="local:getRunGroupingKey(.)">
       <xsl:if test="$doDebug or false()">
         <xsl:message expand-text="yes"> + [DEBUG] handleRunLevelElements: current-grouping-key="{current-grouping-key()}"</xsl:message>
+        <xsl:message expand-text="yes"> + [DEBUG] handleRunLevelElements:  {name(.)}: /{.}/</xsl:message>
+        
 <!--        <xsl:message> + [DEBUG] handleRunLevelElements: current-group()[1]=<xsl:sequence select="current-group()[1]"/></xsl:message>-->
       </xsl:if>
       <xsl:choose>
@@ -410,11 +412,14 @@
     <xsl:choose>
       <xsl:when test="exists($runSequence[w:instrText])">
         <xsl:variable name="instructionText" as="xs:string?"
-          select="normalize-space($runSequence[w:instrText]/w:instrText)"
+          select="normalize-space(string-join(for $text in $runSequence/w:instrText return string($text), ' '))"
         />
         <xsl:variable name="fieldType" as="xs:string" 
           select="tokenize($instructionText, '\s+')[1]"
         />
+        <xsl:if test="false()">
+          <xsl:message expand-text="yes">+ [DEBUG] handleComplexField: instructionText: "{$instructionText}", fieldType: "{$fieldType}"</xsl:message>
+        </xsl:if>
         <xsl:apply-templates select="$fieldType" mode="handleComplexFieldType">
           <xsl:with-param name="runSequence" as="element()+" tunnel="yes" select="$runSequence"/>
         </xsl:apply-templates>
@@ -1761,7 +1766,7 @@
        @return The type value, i.e., "w:run, "run-with-endnote", "run-with-footnote", etc. 
        @since Issue 52
     -->
-  <xsl:function name="local:getRunGroupingKey" as="xs:string">
+  <xsl:function name="local:getRunGroupingKey" as="xs:string" expand-text="yes">
     <xsl:param name="context" as="element()"/>
     <xsl:variable name="precedingFieldStart" as="element(w:r)?"
       select="$context/preceding-sibling::w:r[w:fldChar[@w:fldCharType eq 'begin']][1]"
@@ -1769,7 +1774,14 @@
     <xsl:variable name="precedingFieldEnd" as="element(w:r)?"
       select="$context/preceding-sibling::w:r[. &gt;&gt; $precedingFieldStart][w:fldChar[@w:fldCharType eq 'end']][1]"
     />
-    <xsl:variable name="isInComplexField" as="xs:boolean" select="exists($precedingFieldStart) and empty($precedingFieldEnd)"/>
+    <xsl:variable name="isInComplexField" as="xs:boolean" 
+      select="exists($precedingFieldStart) and empty($precedingFieldEnd)"
+    />
+<!--    <xsl:message>+ [DEBUG] local:getRunGroupingKey(): context: {name($context)} {if ($context/w:fldChar) then 'w:fldChar w:fldCharType=' || $context/w:fldChar/@w:fldCharType else () }</xsl:message>
+    <xsl:message>+ [DEBUG] local:getRunGroupingKey():   precedingFieldStart: /{$precedingFieldStart/w:fldChar/@fldCharType}/</xsl:message>
+    <xsl:message>+ [DEBUG] local:getRunGroupingKey():   precedingFieldEnd:   /{$precedingFieldEnd/w:fldChar/@fldCharType}/</xsl:message>
+    <xsl:message>+ [DEBUG] local:getRunGroupingKey():   isInComplexField:    /{$isInComplexField}/</xsl:message>
+-->
     <xsl:variable name="formatOverrideString" as="xs:string?" select="local:getFormatOverrideString($context)"/>
     <xsl:variable name="result" as="xs:string"
       select="
