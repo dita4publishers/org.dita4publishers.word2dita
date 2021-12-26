@@ -38,8 +38,9 @@
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     
     <xsl:if test="$doDebug">
-      <xsl:message>[DEBUG] final-fixup: Phrase where outputclass matches '^(b|i|u|sub|sup)-.+')': <xsl:sequence select="."/></xsl:message>
+      <xsl:message>[DEBUG] final-fixup: Phrase where outputclass matches '^(b|i|u|sub|sup|strike|linethrough)-.+')': <xsl:sequence select="."/></xsl:message>
     </xsl:if>
+    <!-- NOTE: Attributes are put out on leaf elements only -->
     <xsl:variable name="attributes" as="attribute()*">
       <xsl:apply-templates mode="#current" select="@*">
         <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
@@ -48,7 +49,7 @@
 
     <xsl:variable name="tokens" as="xs:string+" select="tokenize(@outputclass, '-')"/>
     <xsl:apply-templates select="head($tokens)" mode="final-fixup-format-to-tags">
-      <xsl:with-param name="attributes" as="attribute()*" select="$attributes"/>
+      <xsl:with-param name="attributes" as="attribute()*" tunnel="yes" select="$attributes"/>
       <xsl:with-param name="tokens" as="xs:string*" select="tail($tokens)" tunnel="yes"/>
       <xsl:with-param name="content" as="node()*" select="node()" tunnel="yes"/>
     </xsl:apply-templates>
@@ -56,7 +57,7 @@
   </xsl:template>
   
   <xsl:template mode="final-fixup-format-to-tags" match=".[. = ('b','i','u','linethrough','sub','sup')]">
-    <xsl:param name="attributes" as="attribute()*"/> 
+    <xsl:param name="attributes" as="attribute()*" tunnel="yes"/> 
     <xsl:param name="tokens" as="xs:string*" tunnel="yes"/>
     <xsl:param name="content" as="node()*" tunnel="yes"/>
     <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
@@ -67,8 +68,6 @@
     </xsl:if>
     
     <xsl:element name="{.}">
-      <xsl:sequence select="$attributes[name(.) ne 'outputclass']"/>
-      <!-- NOTE: only the first (top-level) element generated will have actual attributes -->
       <xsl:choose>
         <xsl:when test="exists($tokens)">
           <xsl:apply-templates select="head($tokens)" mode="final-fixup-format-to-tags">
@@ -76,6 +75,7 @@
           </xsl:apply-templates>
         </xsl:when>
         <xsl:otherwise>
+          <xsl:sequence select="$attributes[name(.) ne 'outputclass']"/>
           <xsl:sequence select="$content"/>
         </xsl:otherwise>
       </xsl:choose>          
