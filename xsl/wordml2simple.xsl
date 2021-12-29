@@ -370,9 +370,17 @@
         </xsl:when>
         <xsl:when test="current-grouping-key() eq 'complexField'">
           <!-- Issue 53: Added handling of complex fields -->
-          <xsl:call-template name="handleComplexField">
+          <!-- Issue 91: Handle sequences of adjacent fields -->
+          <xsl:if test="$doDebug">
+            <xsl:message>+ [DEBUG] Handling complexField run group: Calling handleComplexFields...</xsl:message>
+          </xsl:if>
+          <xsl:call-template name="handleComplexFields">
+            <xsl:with-param name="doDebug" as="xs:boolean" tunnel="yes" select="$doDebug"/>
             <xsl:with-param name="runSequence" select="current-group()"/>
           </xsl:call-template>
+          <xsl:if test="$doDebug">
+            <xsl:message>+ [DEBUG] Handling complexField run group: Done with handleComplexFields.</xsl:message>
+          </xsl:if>
         </xsl:when>
         <xsl:when test="current-group()[1][self::w:r]">
           <!-- Issue 52: Runs should be grouped by style ID based on the value of getRunType. -->
@@ -404,10 +412,43 @@
   <!--
     Handle the runs that make up a complex field. See 17.16 Fields and Hyperlinks in the OOXML Reference 
     @param runSequence The runs that make up the complex field. Should include both the begin and end field marker runs.
+    @since Issue 91
+    -->
+  <xsl:template name="handleComplexFields">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
+    <xsl:param name="runSequence" as="element()*"/>
+    
+    <!-- Issue 91: The run sequence can be two or more adjacent fields so we need to do a second grouping by field start -->
+    
+    <xsl:if test="$doDebug">
+      <xsl:message expand-text="yes">+ [DEBUG] handleComplexFields: Starting. Have {count($runSequence[w:fldChar[@w:fldCharType eq 'begin']])} field begin runs.</xsl:message>
+    </xsl:if>
+    
+    <xsl:for-each-group select="$runSequence" group-starting-with="$runSequence[w:fldChar[@w:fldCharType eq 'begin']]">
+      <xsl:if test="$doDebug">
+        <xsl:message expand-text="yes">+ [DEBUG] handleComplexFields:   Handling group:
+<xsl:sequence select="current-group()"/>        
+        </xsl:message>
+      </xsl:if>
+      <xsl:call-template name="handleComplexField">
+        <xsl:with-param name="runSequence" select="current-group()"/>
+      </xsl:call-template>
+    </xsl:for-each-group>
+  </xsl:template>
+
+  
+  <!--
+    Handle the runs that make up a complex field. See 17.16 Fields and Hyperlinks in the OOXML Reference 
+    @param runSequence The runs that make up the complex field. Should include both the begin and end field marker runs.
     @since Issue 53
     -->
   <xsl:template name="handleComplexField">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="runSequence" as="element()*"/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] handleComplexField: Starting...</xsl:message>
+    </xsl:if>
     
     <xsl:choose>
       <xsl:when test="exists($runSequence[w:instrText])">
@@ -435,6 +476,9 @@
       </xsl:otherwise>
     </xsl:choose>
     
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] handleComplexField: Done.</xsl:message>
+    </xsl:if>
   </xsl:template>
     
   <xsl:template match="m:oMathPara">

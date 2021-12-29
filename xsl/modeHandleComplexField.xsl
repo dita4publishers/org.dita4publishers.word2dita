@@ -53,28 +53,36 @@
     See 17.16.5.51 REF in OOXML Reference
     -->
   <xsl:template mode="handleComplexFieldType" match=".[lower-case(.) eq 'ref']">
+    <xsl:param name="doDebug" as="xs:boolean" tunnel="yes" select="false()"/>
     <xsl:param name="runSequence" as="element()*" tunnel="yes" select="()"/>
     <xsl:param name="stylesDoc" as="document-node()" tunnel="yes"/>
     <xsl:variable name="fieldType" as="xs:string" select="."/>
+    
+    <xsl:if test="$doDebug">
+      <xsl:message>+ [DEBUG] handleComplexFieldType: Handing ref field type...</xsl:message>
+    </xsl:if>
 
     <xsl:variable name="instruction" as="xs:string"
       select="normalize-space(string-join(for $text in $runSequence/w:instrText return string($text), ' '))"
     />
+    <xsl:if test="$doDebug">
+      <xsl:message expand-text="true">+ [DEBUG] handleComplexFieldType:   instruction: "{$instruction}"</xsl:message>
+    </xsl:if>
     <xsl:variable name="separator" as="element()?" select="$runSequence[w:fldChar[@w:fldCharType eq 'separate']]"/>
     <xsl:variable name="end" as="element()?" select="$runSequence[w:fldChar[@w:fldCharType eq 'end']]"/>
     
     <xsl:variable name="targetID" as="xs:string" select="tokenize($instruction)[2]"/>
-    <xsl:if test="false()">
+    <xsl:if test="$doDebug">
       <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: Flags: /{substring-after($instruction, $targetID) => normalize-space()}/</xsl:message>
     </xsl:if>
     <xsl:variable name="flags" as="map(*)">
       <xsl:variable name="flagTokens" as="xs:string*" select="substring-after($instruction, $targetID) => normalize-space() => tokenize('\\')"/>
-      <xsl:if test="false()">
+      <xsl:if test="$doDebug">
         <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: flagTokens: '{$flagTokens => string-join("', '")}'</xsl:message>
       </xsl:if>
       <xsl:map>
         <xsl:for-each select="$flagTokens[. ne '']">
-          <xsl:if test="false()">
+          <xsl:if test="$doDebug">
             <xsl:message expand-text="yes">+ [DEBUG] handleComplexFieldType {$fieldType}: token[{position()}]="{.}"</xsl:message>
           </xsl:if>
           <xsl:variable name="tokens" as="xs:string*" select="tokenize(., '\s+')"/>
