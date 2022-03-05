@@ -1863,11 +1863,12 @@
     </xsl:if>
     <xsl:for-each-group select="$sectionParas" group-starting-with="*[string(@structureType) = 'section']">
       <xsl:choose>
-        <xsl:when test="current-group()[position() = 1] and string(@structureType) != 'section'">
+        <xsl:when test="position() eq 1 and string(@structureType) != 'section'">
           <xsl:choose>
             <xsl:when test="$initialSectionType != ''">
               <xsl:element name="{$initialSectionType}">
                 <xsl:call-template name="generateXtrcAtt"/>
+                <xsl:call-template name="setSectionAttributes"/>
                 <xsl:call-template name="handleBodyParas">
                   <xsl:with-param name="bodyParas" select="current-group()"/>
                 </xsl:call-template>
@@ -1887,6 +1888,7 @@
           />
           <xsl:element name="{$sectionType}">
             <xsl:call-template name="generateXtrcAtt"/>
+            <xsl:call-template name="setSectionAttributes"/>
             <xsl:if test="@spectitle != ''">
               <xsl:variable name="spectitle" select="local:constructSpectitle(.)" as="xs:string"/>
               <xsl:attribute name="spectitle" select="$spectitle"/>
@@ -1902,12 +1904,14 @@
               </xsl:choose>
               
             </xsl:variable>
+            <!-- If the first paragraph is used entirely as the spectitle 
+                 then omit the first paragraph.
+              -->
             <xsl:variable name="bodyParas"
-              select="if (string(@useAsTitle) = 'no' or 
-                          ((@spectitle != '') and 
+              select="if (((@spectitle ne '') and 
                            (not(starts-with(@spectitle, '#')))))
-                         then current-group()[position() > 1]
-                         else ($firstSectionPara, current-group()[position() > 1])                         
+                         then current-group()[position() gt 1]
+                         else ($firstSectionPara, current-group()[position() gt 1])                         
               "
             />
             <xsl:call-template name="handleBodyParas">
@@ -1917,6 +1921,15 @@
         </xsl:otherwise>
       </xsl:choose>      
     </xsl:for-each-group>
+  </xsl:template>
+  
+  <!-- 
+    Sets any additional attributes on generated section elements, i.e., @outputclass.
+    -->
+  <xsl:template name="setSectionAttributes">
+    <xsl:if test="exists(@containerOutputclass)">
+      <xsl:attribute name="outputclass" select="@containerOutputclass"/>
+    </xsl:if>
   </xsl:template>
   
   <xsl:template name="handleBodyParas">
