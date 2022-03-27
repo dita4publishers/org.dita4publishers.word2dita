@@ -494,7 +494,7 @@
     <xsl:param name="parentMapUrl" as="xs:string" tunnel="yes"/>
     
     <xsl:if test="$doDebug">
-      <xsl:message> + [DEBUG] rsiwp:topichead</xsl:message>
+      <xsl:message> + [DEBUG] rsiwp:topicHead|topicGroup|topicref (no child topic elements)</xsl:message>
     </xsl:if>
     
     <xsl:variable name="topicrefType" as="xs:string"
