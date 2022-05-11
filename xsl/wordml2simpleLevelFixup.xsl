@@ -119,6 +119,9 @@
     <xsl:choose>
       <xsl:when test="$myLevelValue = ''">
         <!-- If level is unspecified, nothing to do, let it default -->
+        <!-- FIXME: This can lead to a template nesting runtime failure
+                    if there are not enough explicit levels.
+          -->
         <xsl:sequence select="."/>
         <xsl:apply-templates select="following-sibling::*[1]" mode="#current">
           <xsl:with-param name="currentLevel" as="xs:integer" 
